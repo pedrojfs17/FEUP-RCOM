@@ -6,14 +6,23 @@
 #include <termios.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include "message_defs.h"
  
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 #define FALSE 0
 #define TRUE 1
+
  
 volatile int STOP=FALSE;
+
+int send_SET(int serial_fd) {
+  char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_EMT, MSG_CTRL_SET, MSG_A_EMT^MSG_CTRL_SET, MSG_FLAG};
+  return write(serial_fd, msg, MSG_SET_SIZE);
+}
  
 int main(int argc, char** argv)
 {
@@ -23,8 +32,8 @@ int main(int argc, char** argv)
     int i, sum = 0, speed = 0;
     
     if ( (argc < 2) || 
-         ((strcmp("/dev/ttyS10", argv[1])!=0) && 
-          (strcmp("/dev/ttyS11", argv[1])!=0) )) {
+         ((strcmp("/dev/ttyS0", argv[1])!=0) && 
+          (strcmp("/dev/ttyS1", argv[1])!=0) )) {
       printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
       exit(1);
     }
@@ -73,6 +82,10 @@ int main(int argc, char** argv)
  
     printf("New termios structure set\n");
  
+    if (send_SET(fd) == -1) {
+      perror("SET FAILURE");
+    }
+
     printf("Enter a string: ");
     gets(buf);
  
