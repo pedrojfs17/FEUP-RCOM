@@ -29,6 +29,20 @@ int send_SET(int serial_fd) {
   return write(serial_fd, msg, MSG_SET_SIZE);
 }
 
+int send_byte(char byte) {
+  printf("Sent byte: %#4.2x\n", byte);
+}
+
+int parseByte(char byte) {
+  if (byte == MSG_FLAG || byte == ESCAPE) {
+    send_byte(0x7d);
+    send_byte(byte ^ 0x20);
+  }
+  else {
+    send_byte(byte);
+  }
+}
+
 void updateState(State * state, char byte) {
   switch (*state)
   {
@@ -153,6 +167,12 @@ int main(int argc, char** argv)
       }
 
     } while (numTries < 3 && state != STOP);
+
+    char test[] = "~ ola (}";
+
+    for (int i = 0; i < sizeof(test); i++) {
+      parseByte(test[i]);
+    }
 
 
     //printf("Enter a string: ");

@@ -1,6 +1,7 @@
 typedef enum {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP} State;
 
 #define MSG_FLAG 0x7e
+#define ESCAPE 0x7d
 
 #define MSG_A_EMT 0x03
 #define MSG_A_REC 0x01
