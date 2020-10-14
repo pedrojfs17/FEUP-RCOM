@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "message_defs.h"
  
@@ -16,7 +17,12 @@
 #define FALSE 0
 #define TRUE 1
 
-//volatile int STOP=FALSE;
+int numTries = 0;
+int retry = FALSE;
+
+void atende() {
+  retry = TRUE;
+}
 
 int send_SET(int serial_fd) {
   char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_EMT, MSG_CTRL_SET, MSG_A_EMT^MSG_CTRL_SET, MSG_FLAG};
@@ -104,8 +110,8 @@ int main(int argc, char** argv)
     /* set input mode (non-canonical, no echo,...) */
     newtio.c_lflag = 0;
  
-    newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-    newtio.c_cc[VMIN]     = 1;   /* blocking read until 5 chars received */
+    newtio.c_cc[VTIME]    = 1;   /* inter-character timer unused */
+    newtio.c_cc[VMIN]     = 0;   /* blocking read until 5 chars received */
  
  
  
@@ -124,18 +130,29 @@ int main(int argc, char** argv)
     }
  
     printf("New termios structure set\n");
- 
-    if (send_SET(fd) == -1) {
-      perror("SET FAILURE");
-    }
+
+    (void) signal(SIGALRM, atende);
 
     State state = START;
- 
-    while (state != STOP) {       /* loop for input */
-      res = read(fd,buf,1);   /* returns after 1 char has been input */
-      printf("byte: %#4.2x\n", buf[0]);
-      updateState(&state, buf[0]);
-    }
+
+    do {
+      numTries++;
+      retry = FALSE;
+
+      if (send_SET(fd) == -1) {
+        perror("SET FAILURE");
+      }
+
+      alarm(3);
+
+      while (state != STOP && !retry) {       /* loop for input */
+        res = read(fd,buf,1);   /* returns after 1 char has been input */
+        if (res == 0) continue;
+        printf("byte: %#4.2x\n", buf[0]);
+        updateState(&state, buf[0]);
+      }
+
+    } while (numTries < 3 && state != STOP);
 
 
     //printf("Enter a string: ");
