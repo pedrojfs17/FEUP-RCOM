@@ -133,6 +133,20 @@ int main(int argc, char** argv)
     if (send_UA(fd) == -1) {
       perror("UA FAILURE");
     }
+
+    printf("Going to read message: ");
+    //fflush(stdout);
+
+    //char msg[255];
+    int numBytesRead = 0;
+
+    /*while (buf[0] != '\0') {
+      printf("Reading byte");
+      res = read(fd, buf, 1);
+      //msg[numBytesRead] = buf[0];
+      printf("%s", buf[0]);
+      numBytesRead += res;
+    }*/
  
     //res = write(fd,buf,strlen(buf)+1);   
     //printf("%d bytes written\n", res);

@@ -29,17 +29,18 @@ int send_SET(int serial_fd) {
   return write(serial_fd, msg, MSG_SET_SIZE);
 }
 
-int send_byte(char byte) {
+void send_byte(int serial_fd, char byte) {
+  write(serial_fd, byte, 1);
   printf("Sent byte: %#4.2x\n", byte);
 }
 
-int parseByte(char byte) {
+void parseByte(int serial_fd, char byte) {
   if (byte == MSG_FLAG || byte == ESCAPE) {
-    send_byte(0x7d);
-    send_byte(byte ^ 0x20);
+    send_byte(serial_fd, 0x7d);
+    send_byte(serial_fd, byte ^ 0x20);
   }
   else {
-    send_byte(byte);
+    send_byte(serial_fd, byte);
   }
 }
 
@@ -171,7 +172,7 @@ int main(int argc, char** argv)
     char test[] = "~ ola (}";
 
     for (int i = 0; i < sizeof(test); i++) {
-      parseByte(test[i]);
+      parseByte(fd, test[i]);
     }
 
 
