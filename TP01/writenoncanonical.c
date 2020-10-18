@@ -30,7 +30,7 @@ int send_SET(int serial_fd) {
 }
 
 void send_byte(int serial_fd, char byte) {
-  write(serial_fd, byte, 1);
+  write(serial_fd, &byte, sizeof(char));
   printf("Sent byte: %#4.2x\n", byte);
 }
 
@@ -163,7 +163,7 @@ int main(int argc, char** argv)
       while (state != STOP && !retry) {       /* loop for input */
         res = read(fd,buf,1);   /* returns after 1 char has been input */
         if (res == 0) continue;
-        printf("byte: %#4.2x\n", buf[0]);
+        printf("UA byte: %#4.2x\n", buf[0]);
         updateState(&state, buf[0]);
       }
 

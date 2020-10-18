@@ -6,6 +6,7 @@
 #include <termios.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
  
 #include "message_defs.h"
 
@@ -19,6 +20,21 @@
 int send_UA(int serial_fd) {
   char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_REC, MSG_CTRL_UA, MSG_A_REC^MSG_CTRL_UA, MSG_FLAG};
   return write(serial_fd, msg, MSG_SET_SIZE);
+}
+
+void parse_msg(char * msg, int size, char * parsedMsg, int * msgSize) {
+  *msgSize = 0;
+
+  for (int i = 0; i < size; i++) {
+    if (msg[i] == ESCAPE) {
+      parsedMsg[*msgSize] = msg[i + 1] ^ 0x20;
+      i++;
+    }
+    else
+      parsedMsg[*msgSize] = msg[i];
+
+    (*msgSize)++;
+  }
 }
 
 void updateState(State * state, char byte) {
@@ -126,7 +142,7 @@ int main(int argc, char** argv)
  
     while (state != STOP) {       /* loop for input */
       res = read(fd,buf,1);   /* returns after 1 char has been input */
-      printf("byte: %#4.2x\n", buf[0]);
+      printf("SET byte: %#4.2x\n", buf[0]);
       updateState(&state, buf[0]);
     }
 
@@ -134,19 +150,23 @@ int main(int argc, char** argv)
       perror("UA FAILURE");
     }
 
-    printf("Going to read message: ");
-    //fflush(stdout);
+    char msg[255], parsedMsg[256];
+    int numBytesRead = 0, msgSize;
 
-    //char msg[255];
-    int numBytesRead = 0;
-
-    /*while (buf[0] != '\0') {
-      printf("Reading byte");
+    while (buf[0] != '\0') {
       res = read(fd, buf, 1);
-      //msg[numBytesRead] = buf[0];
-      printf("%s", buf[0]);
-      numBytesRead += res;
-    }*/
+      msg[numBytesRead] = buf[0];
+      numBytesRead++;
+      printf("Received byte: %#4.2x\n", buf[0]);
+    }
+
+    parse_msg(msg, numBytesRead, parsedMsg, &msgSize);
+
+    printf("MSG: ");
+    for (int i = 0; i < msgSize; i++) {
+      printf("%c", parsedMsg[i]);
+    }
+    printf("\n");
  
     //res = write(fd,buf,strlen(buf)+1);   
     //printf("%d bytes written\n", res);
