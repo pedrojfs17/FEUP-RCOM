@@ -1,3 +1,5 @@
+#pragma once
+
 typedef enum {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP} State;
 
 #define MSG_FLAG 0x7e
@@ -10,3 +12,11 @@ typedef enum {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP} State;
 #define MSG_CTRL_UA 0x07
 
 #define MSG_SET_SIZE 5
+
+#define COM0 0
+#define COM1 1
+#define COM10 10
+#define COM11 11
+
+#define TRANSMITTER 0
+#define RECEIVER 1
