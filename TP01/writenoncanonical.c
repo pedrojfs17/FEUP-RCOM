@@ -206,9 +206,6 @@ int main(int argc, char** argv)
       exit(-1);
     }
  
- 
- 
- 
     close(fd);
     return 0;
 }
