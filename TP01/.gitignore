@@ -1,7 +1,4 @@
 .vscode
-*.o
 cable
 reader
 writer
-writenoncanonical
-noncanonical
