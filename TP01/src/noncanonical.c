@@ -63,7 +63,11 @@ int main(int argc, char** argv)
     because we don't want to get killed if linenoise sends CTRL-C.
   */
 
-    int fd = llopen(port, RECEIVER);
+    int fd;
+    if ((fd = llopen(port, RECEIVER)) < 0) {
+      perror("llopen failed");
+      return 1;
+    }
 
     char msg[255], parsedMsg[256];
     int numBytesRead = 0, msgSize;
@@ -82,17 +86,17 @@ int main(int argc, char** argv)
       printf("%c", parsedMsg[i]);
     }
     printf("\n");
- 
-    //res = write(fd,buf,strlen(buf)+1);   
-    //printf("%d bytes written\n", res);
- 
-  /* 
+
+  /*
     O ciclo WHILE deve ser alterado de modo a respeitar o indicado no guião 
   */
  
- 
     sleep(1);
-    tcsetattr(fd,TCSANOW,&oldtio);
-    close(fd);
+    
+    if (llclose(fd) < 0) {
+      perror("llclose failed");
+      return 1;
+    }
+
     return 0;
 }
