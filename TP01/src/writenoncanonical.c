@@ -63,7 +63,11 @@ int main(int argc, char** argv)
     because we don't want to get killed if linenoise sends CTRL-C.
   */
  
-    int fd = llopen(port, TRANSMITTER);
+    int fd;
+    if ((fd = llopen(port, TRANSMITTER)) < 0) {
+      perror("llopen failed");
+      return 1;
+    }
  
 
     char test[] = "~ ola (}";
@@ -74,11 +78,10 @@ int main(int argc, char** argv)
  
     sleep(1);
    
-    if (tcsetattr(fd,TCSANOW, &oldtio) == -1) {
-      perror("tcsetattr");
-      exit(-1);
+    if (llclose(fd) < 0) {
+      perror("llclose failed");
+      return 1;
     }
- 
-    close(fd);
+
     return 0;
 }

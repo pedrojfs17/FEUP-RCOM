@@ -47,10 +47,8 @@ void SET_UA_updateState(char byte) {
                 current_state = START;
             break;
         case BCC_OK:
-            if (byte == MSG_FLAG){
-                printf("FINISHED\n");
+            if (byte == MSG_FLAG)
                 current_state = STOP;
-            }
             else
                 current_state = START;
             break;

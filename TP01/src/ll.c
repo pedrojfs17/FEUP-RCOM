@@ -3,6 +3,7 @@
 #include "ll.h"
 
 struct termios oldtio;
+struct linkLayer ll;
 
 int retry = FALSE;
 
@@ -11,18 +12,17 @@ void atende() {
 }
 
 int llopen(int port, int role) {
-    char port_str[12];
-    sprintf(port_str, "/dev/ttyS%d", port);
+    sprintf(ll.port, "/dev/ttyS%d", port);
 
-    int fd = open(port_str, O_RDWR | O_NOCTTY);
+    int fd = open(ll.port, O_RDWR | O_NOCTTY);
     if (fd < 0) { 
-        perror(port_str);
+        perror(ll.port);
         return -1;
     }
 
     struct termios newtio;
 
-    if ( tcgetattr(fd,&oldtio) == -1) { /* save current port settings */
+    if (tcgetattr(fd, &oldtio) == -1) { /* save current port settings */
         perror("tcgetattr");
         return -1;
     }
@@ -40,7 +40,7 @@ int llopen(int port, int role) {
  
     tcflush(fd, TCIOFLUSH);
  
-    if ( tcsetattr(fd,TCSANOW,&newtio) == -1) {
+    if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
         perror("tcsetattr");
         return -1;
     }
@@ -115,4 +115,13 @@ int trans_init(int fd) {
     } while (numTries < 3 && getState() != STOP);
 
     return 0;
+}
+
+int llclose(int fd) {
+    if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
+        perror("tcsetattr");
+        exit(-1);
+    }
+ 
+    close(fd);
 }
