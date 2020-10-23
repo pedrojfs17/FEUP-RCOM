@@ -31,7 +31,12 @@ void SET_UA_updateState(char byte) {
         case A_RCV:
             if (byte == MSG_FLAG)
                 break;
-            else if (byte == MSG_CTRL_UA || byte == MSG_CTRL_SET) {
+            else if (byte == MSG_CTRL_UA || 
+                    byte == MSG_CTRL_SET || 
+                    byte == MSG_CTRL_RR0 || 
+                    byte == MSG_CTRL_RR1 || 
+                    byte == MSG_CTRL_REJ0 || 
+                    byte == MSG_CTRL_REJ1) {
                 current_state = C_RCV;
                 ctrl = byte;
             }

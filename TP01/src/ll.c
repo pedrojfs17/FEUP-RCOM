@@ -117,6 +117,55 @@ int trans_init(int fd) {
     return 0;
 }
 
+int llwrite(int fd, char * buffer, int lenght) {
+    int totalBytesSent = 0, bytesSent, numTries = 0;
+    char stuffedMessage[lenght * 2];
+
+    int messageSize = messageStuffing(buffer, lenght, stuffedMessage);
+
+    do {
+
+        do {
+            numTries++;
+            retry = FALSE;
+
+            if ((bytesSent = write(fd, stuffedMessage, messageSize)) == -1) {
+                perror("Error writing message");
+            }
+
+            alarm(3);
+
+            resetState();
+
+            int res;
+            char byte;
+            while (getState() != STOP && !retry) {          /* loop for input */
+                res = read(fd, byte, 1);                     /* returns after 1 char has been input */
+                if (res == 0) continue;
+                printf("Received response byte: %#4.2x\n", byte);
+                SET_UA_updateState(byte);
+            }
+
+        } while (numTries < 3);
+
+        totalBytesSent += bytesSent;
+
+    } while (totalBytesSent < lenght);
+    
+    alarm(0);
+
+    if (totalBytesSent < lenght)
+        return -1;
+
+    printf("SENT MESSAGE WITH %d BYTES\n", bytesSent);
+
+    return bytesSent;
+}
+
+int llread(int fd, char * buffer) {
+    
+}
+
 int llclose(int fd) {
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
         perror("tcsetattr");

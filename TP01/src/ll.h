@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <signal.h>
  
+#include "utils.h"
 #include "state.h"
 
 #define BAUDRATE B38400

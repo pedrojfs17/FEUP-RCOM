@@ -8,6 +8,10 @@
 
 #define MSG_CTRL_SET 0x03
 #define MSG_CTRL_UA 0x07
+#define MSG_CTRL_RR0 0x05
+#define MSG_CTRL_RR1 0x85
+#define MSG_CTRL_REJ0 0x01
+#define MSG_CTRL_REJ1 0x81
 
 #define MSG_SET_SIZE 5
 

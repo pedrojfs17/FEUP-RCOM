@@ -71,10 +71,10 @@ int main(int argc, char** argv)
  
 
     char test[] = "~ ola (}";
-
-    for (int i = 0; i < sizeof(test); i++) {
-      parseByte(fd, test[i]);
-    } 
+    char stuffedMsg[18];
+    int msgSize = messageStuffing(test, 9, stuffedMsg);
+    write(fd, stuffedMsg, msgSize);
+    printf("Message Sent!");
  
     sleep(1);
    

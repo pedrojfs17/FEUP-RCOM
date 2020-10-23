@@ -79,7 +79,7 @@ int main(int argc, char** argv)
       printf("Received byte: %#4.2x\n", buf[0]);
     }
 
-    parse_msg(msg, numBytesRead, parsedMsg, &msgSize);
+    msgSize = messageDestuffing(msg, numBytesRead, parsedMsg);
 
     printf("MSG: ");
     for (int i = 0; i < msgSize; i++) {
