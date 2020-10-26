@@ -6,6 +6,10 @@ msg_state getState() {
     return state.currentState;
 }
 
+int getRole() {
+    return state.role;
+}
+
 void setStateMachineRole(int role) {
     state.role = role;
 }

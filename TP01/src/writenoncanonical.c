@@ -19,22 +19,6 @@
 
 extern struct termios oldtio;
 
-void send_byte(int serial_fd, char byte) {
-  write(serial_fd, &byte, sizeof(char));
-  printf("Sent byte: %#4.2x\n", byte);
-}
-
-void parseByte(int serial_fd, char byte) {
-  if (byte == MSG_FLAG || byte == ESCAPE) {
-    send_byte(serial_fd, 0x7d);
-    send_byte(serial_fd, byte ^ 0x20);
-  }
-  else {
-    send_byte(serial_fd, byte);
-  }
-}
-
-
 int main(int argc, char** argv)
 {
     if ( (argc < 2) || 
@@ -74,7 +58,7 @@ int main(int argc, char** argv)
     char stuffedMsg[18];
     int msgSize = messageStuffing(test, 9, stuffedMsg);
     write(fd, stuffedMsg, msgSize);
-    printf("Message Sent!");
+    printf("Message Sent!\n");
  
     sleep(1);
    

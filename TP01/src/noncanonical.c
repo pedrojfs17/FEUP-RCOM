@@ -17,26 +17,8 @@
  
 extern struct termios oldtio;
 
-void parse_msg(char * msg, int size, char * parsedMsg, int * msgSize) {
-  *msgSize = 0;
-
-  for (int i = 0; i < size; i++) {
-    if (msg[i] == ESCAPE) {
-      parsedMsg[*msgSize] = msg[i + 1] ^ 0x20;
-      i++;
-    }
-    else
-      parsedMsg[*msgSize] = msg[i];
-
-    (*msgSize)++;
-  }
-}
-
 int main(int argc, char** argv)
 {
-    char buf[255];
-    int res;
- 
     if ( (argc < 2) || 
          ((strcmp("/dev/ttyS0", argv[1])!=0) && 
           (strcmp("/dev/ttyS1", argv[1])!=0) &&
@@ -69,6 +51,9 @@ int main(int argc, char** argv)
       return 1;
     }
 
+    char buf[255];
+    int res;
+ 
     char msg[255], parsedMsg[256];
     int numBytesRead = 0, msgSize;
     buf[0] = 'a';

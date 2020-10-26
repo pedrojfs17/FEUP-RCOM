@@ -5,12 +5,6 @@
 struct termios oldtio;
 struct linkLayer ll;
 
-int retry = FALSE;
-
-void atende() {
-    retry = TRUE;
-}
-
 int llopen(int port, int role) {
     sprintf(ll.port, "/dev/ttyS%d", port);
 
@@ -47,6 +41,8 @@ int llopen(int port, int role) {
  
     printf("New termios structure set\n");
 
+    signal(SIGALRM, atende);
+
     switch (role) {
         case RECEIVER:
             setStateMachineRole(RECEIVER);
@@ -70,109 +66,56 @@ int llopen(int port, int role) {
 }
 
 int recv_init(int fd) {
-    configStateMachine(COMMAND_SET);
-
-    int res;
-    char buf[255];
- 
-    while (getState() != STOP) {        /* loop for input */
-        res = read(fd,buf,1);           /* returns after 1 char has been input */
-        printf("Current state: %d\tSET byte: %#4.2x\n", getState(), buf[0]);
-        updateState(buf[0]);
-    }
-
-    // TODO add retry
-    char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_RECV_RESPONSE, MSG_CTRL_UA, MSG_A_RECV_RESPONSE^MSG_CTRL_UA, MSG_FLAG};
-    
-    return write(fd, msg, MSG_SET_SIZE);
+    readMessage(fd, COMMAND_SET);
+    return sendUA_RECV(fd);
 }
 
 int trans_init(int fd) {
-    signal(SIGALRM, atende);
-
-    configStateMachine(RESPONSE_UA);
-    
-    int numTries = 0;
-    do {
-        numTries++;
-        retry = FALSE;
-
-        char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_TRANS_COMMAND, MSG_CTRL_SET, MSG_A_TRANS_COMMAND^MSG_CTRL_SET, MSG_FLAG};
-
-        if (write(fd, msg, MSG_SET_SIZE) == -1) {
-            perror("SET FAILURE");
-        }
-
-        alarm(3);
-
-        int res;
-        char buf[255];
-        while (getState() != STOP && !retry) {          /* loop for input */
-            res = read(fd, buf, 1);                     /* returns after 1 char has been input */
-            if (res == 0) continue;
-            printf("Current state: %d\tUA byte: %#4.2x\n", getState(), buf[0]);
-            updateState(buf[0]);
-        }
-
-    } while (numTries < 3 && getState() != STOP);
-
-    return 0;
+    return sendSET(fd);
 }
 
 int llwrite(int fd, char * buffer, int lenght) {
-    int totalBytesSent = 0, bytesSent, numTries = 0;
-    char stuffedMessage[lenght * 2];
-
-    int messageSize = messageStuffing(buffer, lenght, stuffedMessage);
-
-    do {
-
-        do {
-            numTries++;
-            retry = FALSE;
-
-            if ((bytesSent = write(fd, stuffedMessage, messageSize)) == -1) {
-                perror("Error writing message");
-            }
-
-            alarm(3);
-
-            resetState();
-
-            int res;
-            char byte;
-            while (getState() != STOP && !retry) {          /* loop for input */
-                res = read(fd, byte, 1);                     /* returns after 1 char has been input */
-                if (res == 0) continue;
-                printf("Received response byte: %#4.2x\n", byte);
-                updateState(byte);
-            }
-
-        } while (numTries < 3);
-
-        totalBytesSent += bytesSent;
-
-    } while (totalBytesSent < lenght);
-    
-    alarm(0);
-
-    if (totalBytesSent < lenght)
-        return -1;
-
-    printf("SENT MESSAGE WITH %d BYTES\n", bytesSent);
-
-    return bytesSent;
+    return 0;
 }
 
 int llread(int fd, char * buffer) {
-    
+    return 0;
 }
 
 int llclose(int fd) {
+    switch (getRole()) {
+        case RECEIVER:
+            if (recv_disc(fd) < 0){
+                perror("Could not disconnect RECEIVER");
+                return -1;
+            }
+            break;
+        case TRANSMITTER:
+            if (trans_disc(fd) < 0){
+                perror("Could not disconnect TRANSMITTER");
+                return -1;
+            }
+            break;
+        default:
+            return -1;
+    }
+
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
         perror("tcsetattr");
         exit(-1);
     }
  
-    close(fd);
+    return close(fd);
+}
+
+int recv_disc(int fd) {
+    printf("DISCONNECTING RECEIVER...\n");
+    readMessage(fd, COMMAND_DISC);
+    return sendDISC_RECV(fd);
+}
+
+int trans_disc(int fd) {
+    printf("DISCONNECTING TRANSMITTER...\n");
+    if (sendDISC_TRANS(fd) < 0) return -1;
+    return sendUA_TRANS(fd) < 0;
 }

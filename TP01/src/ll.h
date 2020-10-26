@@ -13,6 +13,7 @@
  
 #include "utils.h"
 #include "state.h"
+#include "message.h"
 
 #define BAUDRATE B38400
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
@@ -34,3 +35,5 @@ int recv_init(int fd);
 int trans_init(int fd);
 
 int llclose(int fd);
+int recv_disc(int fd);
+int trans_disc(int fd);

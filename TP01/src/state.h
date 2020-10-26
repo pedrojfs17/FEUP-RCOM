@@ -19,6 +19,8 @@ typedef struct {
 
 msg_state getState();
 
+int getRole();
+
 void setStateMachineRole(int role);
 
 void configStateMachine(mode stateMachineMode);
