@@ -49,12 +49,14 @@ int llopen(int port, int role) {
 
     switch (role) {
         case RECEIVER:
+            setStateMachineRole(RECEIVER);
             if (recv_init(fd) < 0){
                 perror("Could not start RECEIVER");
                 return -1;
             }
             break;
         case TRANSMITTER:
+            setStateMachineRole(TRANSMITTER);
             if (trans_init(fd) < 0){
                 perror("Could not start TRANSMITTER");
                 return -1;
@@ -68,7 +70,7 @@ int llopen(int port, int role) {
 }
 
 int recv_init(int fd) {
-    resetState();
+    configStateMachine(COMMAND_SET);
 
     int res;
     char buf[255];
@@ -76,11 +78,11 @@ int recv_init(int fd) {
     while (getState() != STOP) {        /* loop for input */
         res = read(fd,buf,1);           /* returns after 1 char has been input */
         printf("Current state: %d\tSET byte: %#4.2x\n", getState(), buf[0]);
-        SET_UA_updateState(buf[0]);
+        updateState(buf[0]);
     }
 
     // TODO add retry
-    char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_REC, MSG_CTRL_UA, MSG_A_REC^MSG_CTRL_UA, MSG_FLAG};
+    char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_RECV_RESPONSE, MSG_CTRL_UA, MSG_A_RECV_RESPONSE^MSG_CTRL_UA, MSG_FLAG};
     
     return write(fd, msg, MSG_SET_SIZE);
 }
@@ -88,14 +90,14 @@ int recv_init(int fd) {
 int trans_init(int fd) {
     signal(SIGALRM, atende);
 
-    resetState();
+    configStateMachine(RESPONSE_UA);
     
     int numTries = 0;
     do {
         numTries++;
         retry = FALSE;
 
-        char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_EMT, MSG_CTRL_SET, MSG_A_EMT^MSG_CTRL_SET, MSG_FLAG};
+        char msg[MSG_SET_SIZE] = {MSG_FLAG, MSG_A_TRANS_COMMAND, MSG_CTRL_SET, MSG_A_TRANS_COMMAND^MSG_CTRL_SET, MSG_FLAG};
 
         if (write(fd, msg, MSG_SET_SIZE) == -1) {
             perror("SET FAILURE");
@@ -108,8 +110,8 @@ int trans_init(int fd) {
         while (getState() != STOP && !retry) {          /* loop for input */
             res = read(fd, buf, 1);                     /* returns after 1 char has been input */
             if (res == 0) continue;
-            printf("UA byte: %#4.2x\n", buf[0]);
-            SET_UA_updateState(buf[0]);
+            printf("Current state: %d\tUA byte: %#4.2x\n", getState(), buf[0]);
+            updateState(buf[0]);
         }
 
     } while (numTries < 3 && getState() != STOP);
@@ -143,7 +145,7 @@ int llwrite(int fd, char * buffer, int lenght) {
                 res = read(fd, byte, 1);                     /* returns after 1 char has been input */
                 if (res == 0) continue;
                 printf("Received response byte: %#4.2x\n", byte);
-                SET_UA_updateState(byte);
+                updateState(byte);
             }
 
         } while (numTries < 3);
