@@ -16,10 +16,10 @@ int messageStuffing(char * buffer, int lenght, char * stuffedMessage) {
     return messageSize;
 }
 
-int messageDestuffing(char * buffer, int lenght, char * destuffedMessage) {
+int messageDestuffing(char * buffer, int startingByte, int lenght, char * destuffedMessage) {
     int messageSize = 0;
 
-    for (int i = 0; i < lenght; i++) {
+    for (int i = startingByte; i < lenght; i++) {
         if (buffer[i] == ESCAPE) {
             destuffedMessage[messageSize++] = buffer[i + 1] ^ 0x20;
             i++;

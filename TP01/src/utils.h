@@ -7,4 +7,4 @@
 
 int messageStuffing(char * buffer, int lenght, char * stuffedMessage);
 
-int messageDestuffing(char * buffer, int lenght, char * destuffedMessage);
+int messageDestuffing(char * buffer, int startingByte, int lenght, char * destuffedMessage);

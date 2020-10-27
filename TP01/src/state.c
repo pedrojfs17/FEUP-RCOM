@@ -38,6 +38,9 @@ void updateState(char byte) {
         case C_RCV:
             CRCV_stateHandler(byte);
             break;
+        case WAITING_DATA:
+            WaitingData_stateHandler(byte);
+            break;
         case BCC_OK:
             if (byte == MSG_FLAG)
                 state.currentState = STOP;
@@ -130,7 +133,21 @@ void CRCV_stateHandler(char byte) {
     }
 
     if (byte == BCC(state.address, state.control))
-        state.currentState = BCC_OK;
+        if (state.currentMode == COMMAND_DATA)
+            state.currentState = WAITING_DATA;
+        else
+            state.currentState = BCC_OK;
     else
         state.currentState = START;
+}
+
+void WaitingData_stateHandler(char byte) {
+    if (byte == MSG_FLAG) {
+        state.currentState = STOP;
+        return;
+    }
+    else {
+        // CHECK IF MAX MESSAGE LENGHT
+        return;
+    }
 }

@@ -66,20 +66,28 @@ int llopen(int port, int role) {
 }
 
 int recv_init(int fd) {
-    readMessage(fd, COMMAND_SET);
-    return sendUA_RECV(fd);
+    char message[5];
+    readMessage(fd, message, COMMAND_SET);
+    return sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
 }
 
 int trans_init(int fd) {
-    return sendSET(fd);
+    return sendSupervivionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_SET, RESPONSE_UA);
 }
 
 int llwrite(int fd, char * buffer, int lenght) {
-    return 0;
+    char stuffedData[lenght * 2];
+    int msgSize = messageStuffing(buffer, lenght, stuffedData);
+
+    return sendDataMessage(fd, stuffedData, msgSize);
 }
 
 int llread(int fd, char * buffer) {
-    return 0;
+    char stuffedMessage[255]; // MAX MESSAGE SIZE
+    int numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA);
+    int res = messageDestuffing(stuffedMessage, 4, numBytesRead - 1, buffer);
+    sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR0, NO_RESPONSE);
+    return res;
 }
 
 int llclose(int fd) {
@@ -110,12 +118,13 @@ int llclose(int fd) {
 
 int recv_disc(int fd) {
     printf("DISCONNECTING RECEIVER...\n");
-    readMessage(fd, COMMAND_DISC);
-    return sendDISC_RECV(fd);
+    char message[5];
+    readMessage(fd, message, COMMAND_DISC);
+    return sendSupervivionMessage(fd, MSG_A_RECV_COMMAND, MSG_CTRL_DISC, RESPONSE_UA);
 }
 
 int trans_disc(int fd) {
     printf("DISCONNECTING TRANSMITTER...\n");
-    if (sendDISC_TRANS(fd) < 0) return -1;
-    return sendUA_TRANS(fd) < 0;
+    sendSupervivionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_DISC, COMMAND_DISC);
+    return sendSupervivionMessage(fd, MSG_A_TRANS_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
 }

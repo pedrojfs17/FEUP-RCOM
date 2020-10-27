@@ -51,26 +51,18 @@ int main(int argc, char** argv)
       return 1;
     }
 
+    printf("Connected\n");
+
     char buf[255];
     int res;
- 
-    char msg[255], parsedMsg[256];
-    int numBytesRead = 0, msgSize;
-    buf[0] = 'a';
-    while (buf[0] != '\0') {
-      res = read(fd, buf, 1);
-      msg[numBytesRead] = buf[0];
-      numBytesRead++;
-      printf("Received byte: %#4.2x\n", buf[0]);
-    }
 
-    msgSize = messageDestuffing(msg, numBytesRead, parsedMsg);
+    res = llread(fd, buf);
 
-    printf("MSG: ");
-    for (int i = 0; i < msgSize; i++) {
-      printf("%c", parsedMsg[i]);
+    printf("Read %d bytes. Message: '", res);
+    for (int i = 0; i < res; i++) {
+        printf("%c", buf[i]);
     }
-    printf("\n");
+    printf("'\n");
 
   /*
     O ciclo WHILE deve ser alterado de modo a respeitar o indicado no guião 

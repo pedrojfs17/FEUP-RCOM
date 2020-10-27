@@ -52,12 +52,12 @@ int main(int argc, char** argv)
       perror("llopen failed");
       return 1;
     }
+
+    printf("Connected\n");
  
 
     char test[] = "~ ola (}";
-    char stuffedMsg[18];
-    int msgSize = messageStuffing(test, 9, stuffedMsg);
-    write(fd, stuffedMsg, msgSize);
+    llwrite(fd, test, 9);
     printf("Message Sent!\n");
  
     sleep(1);

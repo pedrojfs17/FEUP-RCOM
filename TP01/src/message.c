@@ -6,79 +6,45 @@ void atende() {
     retry = TRUE;
 }
 
-int sendSET(int fd) {
+int sendSupervivionMessage(int fd, char address, char control, mode responseType) {
     char msg[5] = {
         MSG_FLAG, 
-        MSG_A_TRANS_COMMAND, 
-        MSG_CTRL_SET, 
-        MSG_A_TRANS_COMMAND ^ MSG_CTRL_SET, 
+        address, 
+        control, 
+        BCC(address, control), 
         MSG_FLAG
     };
 
-    if (sendMessageWithResponse(fd, msg, MSG_SET_SIZE, RESPONSE_UA) < 0)
-        return -1;
+    if (responseType != -1) {
+        if (sendMessageWithResponse(fd, msg, MSG_SET_SIZE, responseType) < 0)
+            return -1;
+
+        return 0;
+    }
+    else {
+        if (sendMessageWithoutResponse(fd, msg, MSG_SET_SIZE) < 0)
+            return -1;
     
-    return 0;
+        return 0;
+    }
 }
 
-int sendUA_TRANS(int fd) {
-    char msg[MSG_SET_SIZE] = {
-        MSG_FLAG, 
-        MSG_A_TRANS_RESPONSE, 
-        MSG_CTRL_UA, 
-        MSG_A_TRANS_RESPONSE ^ MSG_CTRL_UA, 
-        MSG_FLAG
-    };
-    
-    if (sendMessageWithoutResponse(fd, msg, MSG_SET_SIZE) < 0)
-        return -1;
-    
-    return 0;
-}
+int sendDataMessage(int fd, char * data, int dataSize) {
+    int msgSize = dataSize + 5;
 
-int sendUA_RECV(int fd) {
-    char msg[MSG_SET_SIZE] = {
-        MSG_FLAG, 
-        MSG_A_RECV_RESPONSE, 
-        MSG_CTRL_UA, 
-        MSG_A_RECV_RESPONSE ^ MSG_CTRL_UA, 
-        MSG_FLAG
-    };
-    
-    if (sendMessageWithoutResponse(fd, msg, MSG_SET_SIZE) < 0)
-        return -1;
-    
-    return 0;
-}
+    char msg[msgSize];
 
-int sendDISC_TRANS(int fd) {
-    char msg[MSG_SET_SIZE] = {
-        MSG_FLAG, 
-        MSG_A_TRANS_COMMAND, 
-        MSG_CTRL_DISC, 
-        MSG_A_TRANS_COMMAND ^ MSG_CTRL_DISC, 
-        MSG_FLAG
-    };
+    msg[0] = MSG_FLAG;
+    msg[1] = MSG_A_TRANS_COMMAND;
+    msg[2] = MSG_CTRL_S0;
+    msg[3] = BCC(MSG_A_TRANS_COMMAND, MSG_CTRL_S0);
+    for (int i = 0; i < dataSize; i++) {
+        msg[i + 4] = data[i];
+    }
+    // FALTA BCC2
+    msg[dataSize + 4] = MSG_FLAG;
 
-    if (sendMessageWithResponse(fd, msg, MSG_SET_SIZE, COMMAND_DISC) < 0)
-        return -1;
-    
-    return 0;
-}
-
-int sendDISC_RECV(int fd) {
-    char msg[5] = {
-        MSG_FLAG, 
-        MSG_A_RECV_COMMAND, 
-        MSG_CTRL_DISC, 
-        MSG_A_RECV_COMMAND ^ MSG_CTRL_DISC, 
-        MSG_FLAG
-    };
-
-    if (sendMessageWithResponse(fd, msg, MSG_SET_SIZE, RESPONSE_UA) < 0)
-        return -1;
-    
-    return 0;
+    return sendMessageWithResponse(fd, msg, msgSize, RESPONSE_RR_REJ);
 }
 
 int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseType) {
@@ -116,19 +82,21 @@ int sendMessageWithoutResponse(int fd, char * msg, int messageSize) {
     if (write(fd, msg, messageSize) == -1) {
         perror("WRITE FAILURE!\n");
     }
-
     return 0;
 }
 
-void readMessage(int fd, mode responseType) {
+int readMessage(int fd, char * message, mode responseType) {
     configStateMachine(responseType);
-    int res;
+    int res, numBytesRead = 0;
     char buf[255];
 
     while (getState() != STOP) {
         res = read(fd, buf, 1);
         if (res == 0) continue;
         printf("Byte: %#4.2x\n", buf[0]);
+        message[numBytesRead++] = buf[0];
         updateState(buf[0]);
     }
+
+    return numBytesRead;
 }

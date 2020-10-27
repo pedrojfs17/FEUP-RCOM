@@ -15,20 +15,16 @@
 #define FALSE 0
 #define TRUE 1
 
+#define NO_RESPONSE -1
+
 void atende();
 
-int sendSET(int fd);
+int sendSupervivionMessage(int fd, char address, char control, mode responseType);
 
-int sendUA_TRANS(int fd);
-
-int sendUA_RECV(int fd);
-
-int sendDISC_TRANS(int fd);
-
-int sendDISC_RECV(int fd);
+int sendDataMessage(int fd, char * data, int dataSize);
 
 int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseType);
 
 int sendMessageWithoutResponse(int fd, char * msg, int messageSize);
 
-void readMessage(int fd, mode responseType);
+int readMessage(int fd, char * message, mode responseType);

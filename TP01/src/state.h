@@ -6,7 +6,7 @@
 
 #define BCC(addr, ctrl) (addr^ctrl)
 
-typedef enum {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, STOP} msg_state;
+typedef enum {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, WAITING_DATA, STOP} msg_state;
 typedef enum {RESPONSE_UA, RESPONSE_RR_REJ, COMMAND_SET, COMMAND_DISC, COMMAND_DATA} mode;
 
 typedef struct {
@@ -34,3 +34,5 @@ void FlagRCV_stateHandler(char byte);
 void ARCV_stateHandler(char byte);
 
 void CRCV_stateHandler(char byte);
+
+void WaitingData_stateHandler(char byte);
