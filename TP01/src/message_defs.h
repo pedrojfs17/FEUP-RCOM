@@ -10,13 +10,10 @@
 
 #define MSG_CTRL_SET 0x03
 #define MSG_CTRL_UA 0x07
-#define MSG_CTRL_RR0 0x05
-#define MSG_CTRL_RR1 0x85
-#define MSG_CTRL_REJ0 0x01
-#define MSG_CTRL_REJ1 0x81
+#define MSG_CTRL_RR(r) (r == 0) ? 0x05 : 0x85
+#define MSG_CTRL_REJ(r) (0x01 ^ ((r) << 7))
 #define MSG_CTRL_DISC 0x0b
-#define MSG_CTRL_S0 0x00
-#define MSG_CTRL_S1 0x40
+#define MSG_CTRL_S(r) (0x00 ^ ((r) << 6))
 
 
 #define MSG_SET_SIZE 5

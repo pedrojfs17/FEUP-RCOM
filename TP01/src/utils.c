@@ -31,3 +31,12 @@ int messageDestuffing(char * buffer, int startingByte, int lenght, char * destuf
 
     return messageSize;
 }
+
+char BCC2(char * data, int dataSize, int startingByte) {
+    char bcc = data[startingByte];
+
+    for(int i = startingByte + 1; i < dataSize; i++)
+        bcc ^= data[i];
+
+    return bcc;
+}

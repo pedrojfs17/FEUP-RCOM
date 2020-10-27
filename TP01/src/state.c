@@ -94,7 +94,7 @@ void ARCV_stateHandler(char byte) {
             }
             break;
         case RESPONSE_RR_REJ: 
-            if (byte == MSG_CTRL_RR0 || byte == MSG_CTRL_RR1 || byte == MSG_CTRL_REJ0 || byte == MSG_CTRL_REJ1) {
+            if (byte == MSG_CTRL_RR(0) || byte == MSG_CTRL_RR(1) || byte == MSG_CTRL_REJ(0) || byte == MSG_CTRL_REJ(1)) {
                 state.currentState = C_RCV;
                 state.control = byte;
                 return;
@@ -115,7 +115,7 @@ void ARCV_stateHandler(char byte) {
             }
             break;
         case COMMAND_DATA:
-            if (byte == MSG_CTRL_S0 || byte == MSG_CTRL_S1) {
+            if (byte == MSG_CTRL_S(0) || byte == MSG_CTRL_S(1)) {
                 state.currentState = C_RCV;
                 state.control = byte;
                 return;

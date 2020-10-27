@@ -64,6 +64,14 @@ int main(int argc, char** argv)
     }
     printf("'\n");
 
+    res = llread(fd, buf);
+
+    printf("Read %d bytes. Message: '", res);
+    for (int i = 0; i < res; i++) {
+        printf("%c", buf[i]);
+    }
+    printf("'\n");
+
   /*
     O ciclo WHILE deve ser alterado de modo a respeitar o indicado no guião 
   */

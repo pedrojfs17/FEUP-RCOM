@@ -59,6 +59,9 @@ int main(int argc, char** argv)
     char test[] = "~ ola (}";
     llwrite(fd, test, 9);
     printf("Message Sent!\n");
+    char test2[] = "Eu sou o maior da minha terra.";
+    llwrite(fd, test2, 31);
+    printf("Message Sent!\n");
  
     sleep(1);
    

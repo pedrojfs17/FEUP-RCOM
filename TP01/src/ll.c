@@ -76,18 +76,41 @@ int trans_init(int fd) {
 }
 
 int llwrite(int fd, char * buffer, int lenght) {
+    static int packet = 0;
+
+    char bcc2 = BCC2(buffer, lenght, 0);
     char stuffedData[lenght * 2];
     int msgSize = messageStuffing(buffer, lenght, stuffedData);
 
-    return sendDataMessage(fd, stuffedData, msgSize);
+    int ret;
+    if ((ret = sendDataMessage(fd, stuffedData, msgSize, bcc2, packet)) > -1) {
+        packet = (packet + 1) % 2;
+        return ret;
+    }
+    else return -1;
 }
 
 int llread(int fd, char * buffer) {
+    static int packet = 0;
     char stuffedMessage[255]; // MAX MESSAGE SIZE
     int numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA);
-    int res = messageDestuffing(stuffedMessage, 4, numBytesRead - 1, buffer);
-    sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR0, NO_RESPONSE);
-    return res;
+    int res = messageDestuffing(stuffedMessage, 4, numBytesRead - 2, buffer);
+
+    char receivedBCC2 = stuffedMessage[numBytesRead - 2];
+
+    char receivedDataBCC2 = BCC2(buffer, res, 0);
+
+    if (receivedBCC2 == receivedDataBCC2) {
+        // TODO Erro aqui, o MSG_CTRL_RR(1) dá 0x85 (se der print aqui funciona) mas quando é enviado para a funcao
+        // sendSupervisionMessage chega lá com 0xffffff85 nao sei pq
+        sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE);
+        packet = (packet + 1) % 2;
+        return res;
+    }
+    else {
+        sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_REJ(packet), NO_RESPONSE);
+        return -1;
+    }
 }
 
 int llclose(int fd) {

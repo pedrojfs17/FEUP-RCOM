@@ -7,6 +7,7 @@ void atende() {
 }
 
 int sendSupervivionMessage(int fd, char address, char control, mode responseType) {
+    printf("CONTROL = %#4.2x\n", control);
     char msg[5] = {
         MSG_FLAG, 
         address, 
@@ -29,22 +30,36 @@ int sendSupervivionMessage(int fd, char address, char control, mode responseType
     }
 }
 
-int sendDataMessage(int fd, char * data, int dataSize) {
-    int msgSize = dataSize + 5;
+int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
+    int msgSize = dataSize + 6;
 
     char msg[msgSize];
 
     msg[0] = MSG_FLAG;
     msg[1] = MSG_A_TRANS_COMMAND;
-    msg[2] = MSG_CTRL_S0;
-    msg[3] = BCC(MSG_A_TRANS_COMMAND, MSG_CTRL_S0);
+    msg[2] = MSG_CTRL_S(packet);
+    msg[3] = BCC(MSG_A_TRANS_COMMAND, MSG_CTRL_S(packet));
     for (int i = 0; i < dataSize; i++) {
         msg[i + 4] = data[i];
     }
-    // FALTA BCC2
-    msg[dataSize + 4] = MSG_FLAG;
+    msg[dataSize + 4] = bcc2;
+    msg[dataSize + 5] = MSG_FLAG;
 
-    return sendMessageWithResponse(fd, msg, msgSize, RESPONSE_RR_REJ);
+    int numTries = 0;
+    int receivedACK = FALSE;
+
+    do {
+        numTries++;
+        sendMessageWithResponse(fd, msg, msgSize, RESPONSE_RR_REJ);
+
+        // Parse response
+        receivedACK = TRUE;
+    } while (numTries < 3 && !receivedACK);
+
+    if (!receivedACK)
+        return -1;
+    else
+        return 0;
 }
 
 int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseType) {
