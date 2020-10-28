@@ -1,9 +1,12 @@
 #include "utils.h"
 
-int messageStuffing(char * buffer, int lenght, char * stuffedMessage) {
+int messageStuffing(char * buffer, int startingByte, int lenght, char * stuffedMessage) {
     int messageSize = 0;
 
-    for (int i = 0; i < lenght; i++) {
+    for (int i = 0; i < startingByte; i++)
+        stuffedMessage[messageSize++] = buffer[i];
+
+    for (int i = startingByte; i < lenght; i++) {
         if (buffer[i] == MSG_FLAG || buffer[i] == ESCAPE) {
             stuffedMessage[messageSize++] = 0x7d;
             stuffedMessage[messageSize++] = buffer[i] ^ 0x20;
@@ -18,6 +21,10 @@ int messageStuffing(char * buffer, int lenght, char * stuffedMessage) {
 
 int messageDestuffing(char * buffer, int startingByte, int lenght, char * destuffedMessage) {
     int messageSize = 0;
+
+    for (int i = 0; i < startingByte; i++) {
+        destuffedMessage[messageSize++] = buffer[i];
+    }
 
     for (int i = startingByte; i < lenght; i++) {
         if (buffer[i] == ESCAPE) {

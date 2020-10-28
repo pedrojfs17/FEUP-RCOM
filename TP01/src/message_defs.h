@@ -10,11 +10,12 @@
 
 #define MSG_CTRL_SET 0x03
 #define MSG_CTRL_UA 0x07
-#define MSG_CTRL_RR(r) (unsigned char)(r == 0) ? 0x05 : 0x85
-#define MSG_CTRL_REJ(r) (unsigned char)(r == 0) ? 0x01 : 0x81
+#define MSG_CTRL_RR(r) ((r == 0) ? 0x05 : 0x85)
+#define MSG_CTRL_REJ(r) ((r == 0) ? 0x01 : 0x81)
 #define MSG_CTRL_DISC 0x0b
-#define MSG_CTRL_S(r) (unsigned char)(r == 0) ? 0x00 : 0x40
+#define MSG_CTRL_S(r) ((r == 0) ? 0x00 : 0x40)
 
+#define BCC(addr, ctrl) (addr^ctrl)
 
 #define MSG_SET_SIZE 5
 

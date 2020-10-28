@@ -30,7 +30,7 @@ int sendSupervivionMessage(int fd, char address, char control, mode responseType
 }
 
 int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
-    int msgSize = dataSize + 6;
+    int msgSize = dataSize + 5;
 
     char msg[msgSize];
 
@@ -42,14 +42,18 @@ int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
         msg[i + 4] = data[i];
     }
     msg[dataSize + 4] = bcc2;
-    msg[dataSize + 5] = MSG_FLAG;
+
+    char stuffedData[msgSize * 2];
+    msgSize = messageStuffing(msg, 1, msgSize, stuffedData);
+    stuffedData[msgSize] = MSG_FLAG;
+    msgSize++;
 
     int numTries = 0;
     int receivedACK = FALSE;
 
     do {
         numTries++;
-        sendMessageWithResponse(fd, msg, msgSize, RESPONSE_RR_REJ);
+        sendMessageWithResponse(fd, stuffedData, msgSize, RESPONSE_RR_REJ);
 
         // Parse response
         receivedACK = TRUE;

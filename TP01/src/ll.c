@@ -80,11 +80,11 @@ int llwrite(int fd, char * buffer, int lenght) {
 
     char bcc2 = BCC2(buffer, lenght, 0);
 
-    char stuffedData[lenght * 2];
-    int msgSize = messageStuffing(buffer, lenght, stuffedData);
+    // char stuffedData[lenght * 2];
+    // int msgSize = messageStuffing(buffer, lenght, stuffedData);
 
     int ret;
-    if ((ret = sendDataMessage(fd, stuffedData, msgSize, bcc2, packet)) > -1) {
+    if ((ret = sendDataMessage(fd, buffer, lenght, bcc2, packet)) > -1) {
         packet = (packet + 1) % 2;
         return ret;
     }
@@ -93,18 +93,20 @@ int llwrite(int fd, char * buffer, int lenght) {
 
 int llread(int fd, char * buffer) {
     static int packet = 0;
-    char stuffedMessage[255]; // MAX MESSAGE SIZE
+    char stuffedMessage[255], unstuffedMessage[255]; // MAX MESSAGE SIZE
     int numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA);
-    int res = messageDestuffing(stuffedMessage, 4, numBytesRead - 2, buffer);
+    int res = messageDestuffing(stuffedMessage, 1, numBytesRead - 2, unstuffedMessage);
 
-    char receivedBCC2 = stuffedMessage[numBytesRead - 2];
+    char receivedBCC2;
+    messageDestuffing(&stuffedMessage[numBytesRead-2], 0, 1, &receivedBCC2);
 
-    char receivedDataBCC2 = BCC2(buffer, res, 0);
+    char receivedDataBCC2 = BCC2(unstuffedMessage, res, 4);
 
     if (receivedBCC2 == receivedDataBCC2) {
         sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE);
         packet = (packet + 1) % 2;
-        return res;
+        memcpy(buffer, &unstuffedMessage[4], res-4);
+        return res - 4;
     }
     else {
         sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_REJ(packet), NO_RESPONSE);

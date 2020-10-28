@@ -23,7 +23,7 @@ void resetState() {
     state.currentState = START;
 }
 
-void updateState(char byte) {
+void updateState(unsigned char byte) {
     switch (state.currentState) {
         case START:
             if (byte == MSG_FLAG)
@@ -52,7 +52,7 @@ void updateState(char byte) {
     }
 }
 
-void FlagRCV_stateHandler(char byte) {
+void FlagRCV_stateHandler(unsigned char byte) {
     if (byte == MSG_FLAG)
         return;
 
@@ -79,12 +79,12 @@ void FlagRCV_stateHandler(char byte) {
     state.currentState = START;
 }
 
-void ARCV_stateHandler(char byte) {
+void ARCV_stateHandler(unsigned char byte) {
     if (byte == MSG_FLAG) {
         state.currentState = FLAG_RCV;
         return;
     }
-
+    
     switch (state.currentMode) {
         case RESPONSE_UA:
             if (byte == MSG_CTRL_UA) {
@@ -126,7 +126,7 @@ void ARCV_stateHandler(char byte) {
     state.currentState = START;
 }
 
-void CRCV_stateHandler(char byte) {
+void CRCV_stateHandler(unsigned char byte) {
     if (byte == MSG_FLAG) {
         state.currentState = FLAG_RCV;
         return;
@@ -141,7 +141,7 @@ void CRCV_stateHandler(char byte) {
         state.currentState = START;
 }
 
-void WaitingData_stateHandler(char byte) {
+void WaitingData_stateHandler(unsigned char byte) {
     if (byte == MSG_FLAG) {
         state.currentState = STOP;
         return;
