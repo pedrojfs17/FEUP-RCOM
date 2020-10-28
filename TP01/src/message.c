@@ -7,7 +7,6 @@ void atende() {
 }
 
 int sendSupervivionMessage(int fd, char address, char control, mode responseType) {
-    printf("CONTROL = %#4.2x\n", control);
     char msg[5] = {
         MSG_FLAG, 
         address, 
@@ -78,7 +77,7 @@ int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseTy
         alarm(3);
 
         int res;
-        char buf[255];
+        unsigned char buf[255];
         while (getState() != STOP && !retry) {
             res = read(fd, buf, 1);
             if (res == 0) continue;
@@ -103,7 +102,7 @@ int sendMessageWithoutResponse(int fd, char * msg, int messageSize) {
 int readMessage(int fd, char * message, mode responseType) {
     configStateMachine(responseType);
     int res, numBytesRead = 0;
-    char buf[255];
+    unsigned char buf[255];
 
     while (getState() != STOP) {
         res = read(fd, buf, 1);

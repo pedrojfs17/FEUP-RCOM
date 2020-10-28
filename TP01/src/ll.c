@@ -79,6 +79,7 @@ int llwrite(int fd, char * buffer, int lenght) {
     static int packet = 0;
 
     char bcc2 = BCC2(buffer, lenght, 0);
+
     char stuffedData[lenght * 2];
     int msgSize = messageStuffing(buffer, lenght, stuffedData);
 
@@ -101,8 +102,6 @@ int llread(int fd, char * buffer) {
     char receivedDataBCC2 = BCC2(buffer, res, 0);
 
     if (receivedBCC2 == receivedDataBCC2) {
-        // TODO Erro aqui, o MSG_CTRL_RR(1) dá 0x85 (se der print aqui funciona) mas quando é enviado para a funcao
-        // sendSupervisionMessage chega lá com 0xffffff85 nao sei pq
         sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE);
         packet = (packet + 1) % 2;
         return res;
