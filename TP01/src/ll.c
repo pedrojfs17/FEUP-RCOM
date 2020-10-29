@@ -80,9 +80,6 @@ int llwrite(int fd, char * buffer, int lenght) {
 
     char bcc2 = BCC2(buffer, lenght, 0);
 
-    // char stuffedData[lenght * 2];
-    // int msgSize = messageStuffing(buffer, lenght, stuffedData);
-
     int ret;
     if ((ret = sendDataMessage(fd, buffer, lenght, bcc2, packet)) > -1) {
         packet = (packet + 1) % 2;

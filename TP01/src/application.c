@@ -29,9 +29,7 @@ int checkArgs(int argc, char ** argv, applicationArgs * app) {
         else if (argv[i][0] != '-' && app->path[0] == '\0')
             strcpy(app->path, argv[i]);
         else {
-
-        perror("Hello");
-        return -1;
+            return -1;
         }
     }
 
@@ -44,9 +42,9 @@ int checkArgs(int argc, char ** argv, applicationArgs * app) {
 
 int transmitterApplication(int fd, applicationArgs * app) {
     int file_fd;
-    struct stat fileStat;
+    struct stat file_stat;
 
-    if (stat(app->path, &fileStat)<0){
+    if (stat(app->path, &file_stat)<0){
         perror("Error getting file information.");
         return -1;
     }
@@ -55,10 +53,54 @@ int transmitterApplication(int fd, applicationArgs * app) {
         perror("Error opening file.");
         return -1;
     }
+
+    if (sendControlPacket(fd, START_PACKET, file_stat.st_size, app->path) < 0) {
+        perror("Error sending START packet.");
+        return -1;
+    }
+
+    char buf[16];
+
+    while (read(file_fd, buf, 16) > 0) {
+        if (llwrite(fd, buf, 16) < 0) {
+            perror("llwrite failed");
+            return -1;
+        }
+    }
+
+    if (sendControlPacket(fd, END_PACKET, file_stat.st_size, app->path) < 0) {
+        perror("Error sending END packet.");
+        return -1;
+    }
+
+    return 0;
 }
 
 int receiverApplication(int fd, applicationArgs * app) {
     // RECEIVER APP
+    return 0;
+}
+
+int sendControlPacket(int fd, char ctrl_field, unsigned file_size, char* file_name) {
+    unsigned L1 = sizeof(file_size);
+    unsigned L2 = strlen(file_name);
+    unsigned packet_size = 5 + L1 + L2;
+
+    char packet[packet_size];
+    packet[0] = ctrl_field;
+    packet[1] = FILE_SIZE;
+    printf("filesize: %d\n", file_size);
+    packet[2] = L1;
+    memcpy(&packet[3], &file_size, L1);
+    packet[3+L1] = FILE_NAME;
+    packet[4+L1] = L2;
+    memcpy(&packet[5+L1], file_name, L2);
+
+    return llwrite(fd, packet, packet_size);
+    // for (int i = 0; i < packet_size; i++) {
+    //     printf("pi:%#4.2x ", packet[i]);
+    // }
+    // printf("\n");
 }
 
 int main(int argc, char** argv)
@@ -90,7 +132,7 @@ int main(int argc, char** argv)
     }
     else {
         if (receiverApplication(fd, &app) < 0) {
-            perror("Transmitter Application failed");
+            perror("Receiver Application failed");
             return -1;
         }
     }

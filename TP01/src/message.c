@@ -50,10 +50,11 @@ int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
 
     int numTries = 0;
     int receivedACK = FALSE;
+    int ret;
 
     do {
         numTries++;
-        sendMessageWithResponse(fd, stuffedData, msgSize, RESPONSE_RR_REJ);
+        ret = sendMessageWithResponse(fd, stuffedData, msgSize, RESPONSE_RR_REJ);
 
         response_type response = getLastResponse();
 
@@ -65,19 +66,20 @@ int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
     if (!receivedACK)
         return -1;
     else
-        return 0;
+        return ret;
 }
 
 int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseType) {
     configStateMachine(responseType);
 
     int numTries = 0;
+    int ret;
 
     do {
         numTries++;
         retry = FALSE;
 
-        if (write(fd, msg, messageSize) == -1) {
+        if ((ret = write(fd, msg, messageSize)) == -1) {
             perror("WRITE FAILURE!\n");
         }
 
@@ -96,7 +98,10 @@ int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseTy
 
     alarm(0);
 
-    return 0;
+    if (getState() != STOP)
+        return -1;
+
+    return ret;
 }
 
 int sendMessageWithoutResponse(int fd, char * msg, int messageSize) {

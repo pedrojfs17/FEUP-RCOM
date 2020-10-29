@@ -11,6 +11,13 @@
 
 #include "ll.h"
 
+#define DATA_PACKET 1
+#define START_PACKET 2
+#define END_PACKET 3
+
+#define FILE_SIZE 0
+#define FILE_NAME 1
+
 typedef struct {
     int port;
     int role;
@@ -22,3 +29,5 @@ int checkArgs(int argc, char ** argv, applicationArgs * app);
 int transmitterApplication(int fd, applicationArgs * app);
 
 int receiverApplication(int fd, applicationArgs * app);
+
+int sendControlPacket(int fd, char ctrl_field, unsigned file_size, char* file_name);
