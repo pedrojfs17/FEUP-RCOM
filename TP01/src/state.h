@@ -6,6 +6,7 @@
 
 typedef enum {START, FLAG_RCV, A_RCV, C_RCV, BCC_OK, WAITING_DATA, STOP} msg_state;
 typedef enum {RESPONSE_UA, RESPONSE_RR_REJ, COMMAND_SET, COMMAND_DISC, COMMAND_DATA} mode;
+typedef enum {R_RR0, R_RR1, R_REJ0, R_REJ1} response_type;
 
 typedef struct {
     msg_state currentState;
@@ -13,9 +14,12 @@ typedef struct {
     int role;
     unsigned char control;
     unsigned char address;
+    response_type last_response;
 } stateMachine;
 
 msg_state getState();
+
+response_type getLastResponse();
 
 int getRole();
 

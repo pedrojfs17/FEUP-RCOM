@@ -55,8 +55,11 @@ int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
         numTries++;
         sendMessageWithResponse(fd, stuffedData, msgSize, RESPONSE_RR_REJ);
 
-        // Parse response
-        receivedACK = TRUE;
+        response_type response = getLastResponse();
+
+        if ((packet == 0 && response == R_RR1) || (packet == 1 && response == 0)) {
+            receivedACK = TRUE;
+        }
     } while (numTries < 3 && !receivedACK);
 
     if (!receivedACK)

@@ -103,8 +103,8 @@ int llread(int fd, char * buffer) {
     char receivedDataBCC2 = BCC2(unstuffedMessage, res, 4);
 
     if (receivedBCC2 == receivedDataBCC2) {
-        sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE);
         packet = (packet + 1) % 2;
+        sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE);
         memcpy(buffer, &unstuffedMessage[4], res-4);
         return res - 4;
     }

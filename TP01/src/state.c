@@ -6,6 +6,10 @@ msg_state getState() {
     return state.currentState;
 }
 
+response_type getLastResponse() {
+    return state.last_response;
+}
+
 int getRole() {
     return state.role;
 }
@@ -97,6 +101,20 @@ void ARCV_stateHandler(unsigned char byte) {
             if (byte == MSG_CTRL_RR(0) || byte == MSG_CTRL_RR(1) || byte == MSG_CTRL_REJ(0) || byte == MSG_CTRL_REJ(1)) {
                 state.currentState = C_RCV;
                 state.control = byte;
+                switch (byte) {
+                    case MSG_CTRL_RR(0):
+                        state.last_response = R_RR0;
+                        break;
+                    case MSG_CTRL_RR(1):
+                        state.last_response = R_RR1;
+                        break;
+                    case MSG_CTRL_REJ(0):
+                        state.last_response = R_REJ0;
+                        break;
+                    case MSG_CTRL_REJ(1):
+                        state.last_response = R_REJ1;
+                        break;
+                }
                 return;
             }
             break;
