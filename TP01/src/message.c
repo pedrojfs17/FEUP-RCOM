@@ -58,7 +58,7 @@ int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
 
         response_type response = getLastResponse();
 
-        if ((packet == 0 && response == R_RR1) || (packet == 1 && response == 0)) {
+        if ((packet == 0 && response == R_RR1) || (packet == 1 && response == R_RR0)) {
             receivedACK = TRUE;
         }
     } while (numTries < 3 && !receivedACK);
@@ -86,7 +86,7 @@ int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseTy
         alarm(3);
 
         int res;
-        unsigned char buf[255];
+        unsigned char buf[MAX_BUFFER_SIZE];
         while (getState() != STOP && !retry) {
             res = read(fd, buf, 1);
             if (res == 0) continue;
@@ -114,7 +114,7 @@ int sendMessageWithoutResponse(int fd, char * msg, int messageSize) {
 int readMessage(int fd, char * message, mode responseType) {
     configStateMachine(responseType);
     int res, numBytesRead = 0;
-    unsigned char buf[255];
+    unsigned char buf[MAX_BUFFER_SIZE];
 
     while (getState() != STOP) {
         res = read(fd, buf, 1);

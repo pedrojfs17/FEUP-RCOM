@@ -90,20 +90,18 @@ int llwrite(int fd, char * buffer, int lenght) {
 
 int llread(int fd, char * buffer) {
     static int packet = 0;
-    char stuffedMessage[255], unstuffedMessage[255]; // MAX MESSAGE SIZE
+    char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_BUFFER_SIZE]; // MAX MESSAGE SIZE
     int numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA);
-    int res = messageDestuffing(stuffedMessage, 1, numBytesRead - 2, unstuffedMessage);
-
-    char receivedBCC2;
-    messageDestuffing(&stuffedMessage[numBytesRead-2], 0, 1, &receivedBCC2);
-
-    char receivedDataBCC2 = BCC2(unstuffedMessage, res, 4);
+    int res = messageDestuffing(stuffedMessage, 1, numBytesRead - 1, unstuffedMessage);
+    
+    char receivedBCC2 = unstuffedMessage[res - 1];
+    char receivedDataBCC2 = BCC2(unstuffedMessage, res - 1, 4);
 
     if (receivedBCC2 == receivedDataBCC2) {
         packet = (packet + 1) % 2;
         sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE);
-        memcpy(buffer, &unstuffedMessage[4], res-4);
-        return res - 4;
+        memcpy(buffer, &unstuffedMessage[4], res-5);
+        return res - 5;
     }
     else {
         sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_REJ(packet), NO_RESPONSE);

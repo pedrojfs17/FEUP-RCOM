@@ -63,16 +63,27 @@ int transmitterApplication(int fd, applicationArgs * app) {
     }
 
     // Sends DATA packets
-    char buf[MAX_PACKET_SIZE];
-    unsigned bytes_to_send = file_stat.st_size;
-    while (read(file_fd, buf, MAX_PACKET_SIZE) > 0) {
-        if (llwrite(fd, buf, (bytes_to_send < MAX_PACKET_SIZE)? bytes_to_send : MAX_PACKET_SIZE) < 0) { // Only sends max packet if the last packet is of that size
+    char buf[MAX_PACKET_SIZE], dataPacket[MAX_PACKET_SIZE];
+    unsigned bytes_to_send;
+    unsigned sequenceNumber = 0;
+
+    while ((bytes_to_send = read(file_fd, buf, MAX_PACKET_SIZE - 4)) > 0) {
+        dataPacket[0] = DATA_PACKET;
+        dataPacket[1] = sequenceNumber % 255;
+        dataPacket[2] = bytes_to_send / 256;
+        dataPacket[3] = bytes_to_send % 256;
+        memcpy(&dataPacket[4], buf, bytes_to_send);
+
+        if (llwrite(fd, dataPacket, ((bytes_to_send + 4) < MAX_PACKET_SIZE)? (bytes_to_send + 4) : MAX_PACKET_SIZE) < 0) { // Only sends max packet if the last packet is of that size
             perror("llwrite failed");
             return -1;
         }
-        memset(buf, 0, MAX_PACKET_SIZE);
-        bytes_to_send -= MAX_PACKET_SIZE;
+
+        memset(dataPacket, 0, MAX_PACKET_SIZE);
+        sequenceNumber++;
     }
+
+    printf("Data packets sent: %d\n",sequenceNumber);
 
     // Sends END packet
     if (sendControlPacket(fd, END_PACKET, file_stat.st_size, app->path) < 0) {
@@ -87,44 +98,64 @@ int receiverApplication(int fd, applicationArgs * app) {
     char buf[MAX_PACKET_SIZE];
     int res;
 
-    // Read START packet
-    if ((res = llread(fd, buf)) < 0) {
-        perror("llread failed");
-        return -1;
-    }
-
-    // Calculates number of packets to read
-    unsigned num_bytes = 0;
-    for (int i = 0; i < buf[2]; i++) {
-        num_bytes |= (buf[3+i] << (i*8)); // Reads number from buffer
-    }
-    printf("Will read %d bytes\n", num_bytes);
-    int num_packets = (num_bytes / MAX_PACKET_SIZE) + ((num_bytes % MAX_PACKET_SIZE)? 1 : 0);
-    printf("Will read %d packets\n", num_packets);
-
-    memset(buf, 0, MAX_PACKET_SIZE); // Resets buffer
-
-    // Reads DATA packets
-    for (int i = 0; i < num_packets; i++) {
+    while (1) {
         res = llread(fd, buf);
 
-        // Prints read message
-        printf("Read %d bytes. Message: '", res);
-        for (int i = 0; i < res; i++) {
-            printf("%c", buf[i]);
-        }
-        printf("'\n");
+        if (parsePacket(buf, res, app) == END_PACKET) 
+            break;
 
         memset(buf, 0, MAX_PACKET_SIZE); // Resets buffer
     }
 
-    // Reads END packet
-    if ((res = llread(fd, buf)) < 0) {
-        perror("llread failed");
+    return 0;
+}
+
+int parsePacket(char * buffer, int lenght, applicationArgs * app) {
+    static int destinationFile;
+
+    if (buffer[0] == START_PACKET) {
+        parseControlPacket(buffer, lenght, app);
+        destinationFile = open(app->path, O_RDWR | O_CREAT, 0777);
+        return 0;
+    }
+    else if (buffer[0] == END_PACKET) {
+        close(destinationFile);
+        return END_PACKET;
+    }
+    else if (buffer[0] == DATA_PACKET) {
+        unsigned dataSize = buffer[3] + 256 * buffer[2];
+        write(destinationFile, &buffer[4], dataSize);
+        return 0;
+    }
+    else {
+        printf("Failed on: '");
+        for (int i = 0; i < lenght; i++) {
+            printf("0x%02x ", buffer[i]);
+        }
+        printf("'\n");
         return -1;
     }
+}
 
-    return 0;
+void parseControlPacket(char * buffer, int lenght, applicationArgs * app) {
+    unsigned fileSize = 0;
+
+    for (int i = 1; i < lenght; i++) {
+        if (buffer[i] == FILE_SIZE) {
+            i++; // i is now in the byte with information about the number of bytes
+            for (int j = 0; j < buffer[i]; j++) {
+                fileSize |= (buffer[i+j+1] << (8*j));
+            }
+            i += buffer[i];
+            app->fileSize = fileSize;
+        }
+
+        if (buffer[i] == FILE_NAME) {
+            i++; // i is now in the byte with information about the number of bytes
+            strcat(app->path, &buffer[i+1]);
+            i += buffer[i];
+        }
+    }
 }
 
 int sendControlPacket(int fd, char ctrl_field, unsigned file_size, char* file_name) {

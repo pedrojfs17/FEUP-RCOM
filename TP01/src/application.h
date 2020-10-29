@@ -11,7 +11,7 @@
 
 #include "ll.h"
 
-#define MAX_PACKET_SIZE 32
+#define MAX_PACKET_SIZE (MAX_BUFFER_SIZE / 2)
 
 #define DATA_PACKET 1
 #define START_PACKET 2
@@ -24,6 +24,7 @@ typedef struct {
     int port;
     int role;
     char path[256];
+    unsigned fileSize;
 } applicationArgs;
 
 int checkArgs(int argc, char ** argv, applicationArgs * app);
@@ -31,5 +32,9 @@ int checkArgs(int argc, char ** argv, applicationArgs * app);
 int transmitterApplication(int fd, applicationArgs * app);
 
 int receiverApplication(int fd, applicationArgs * app);
+
+int parsePacket(char * buffer, int lenght, applicationArgs * app);
+
+void parseControlPacket(char * buffer, int lenght, applicationArgs * app);
 
 int sendControlPacket(int fd, char ctrl_field, unsigned file_size, char* file_name);

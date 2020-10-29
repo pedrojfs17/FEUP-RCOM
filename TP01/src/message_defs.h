@@ -1,5 +1,7 @@
 #pragma once
 
+#define MAX_BUFFER_SIZE 64 // Minimum is 32
+
 #define MSG_FLAG 0x7e
 #define ESCAPE 0x7d
 
