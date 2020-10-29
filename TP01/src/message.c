@@ -90,7 +90,7 @@ int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseTy
         while (getState() != STOP && !retry) {
             res = read(fd, buf, 1);
             if (res == 0) continue;
-            printf("Byte: %#4.2x\n", buf[0]);
+            // printf("Byte: %#4.2x\n", buf[0]);
             updateState(buf[0]);
         }
 
@@ -119,7 +119,7 @@ int readMessage(int fd, char * message, mode responseType) {
     while (getState() != STOP) {
         res = read(fd, buf, 1);
         if (res == 0) continue;
-        printf("Byte: %#4.2x\n", buf[0]);
+        // printf("Byte: %#4.2x\n", buf[0]);
         message[numBytesRead++] = buf[0];
         updateState(buf[0]);
     }

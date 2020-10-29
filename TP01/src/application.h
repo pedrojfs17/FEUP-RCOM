@@ -11,6 +11,8 @@
 
 #include "ll.h"
 
+#define MAX_PACKET_SIZE 32
+
 #define DATA_PACKET 1
 #define START_PACKET 2
 #define END_PACKET 3
