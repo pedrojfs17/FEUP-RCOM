@@ -1,11 +1,12 @@
 #include "receiver.h"
 
 int receiverApplication(int fd, char* path) {
-    char buf[MAX_PACKET_SIZE];
+    
     int res;
     int nump = 0;
 
     while (1) {
+        char buf[MAX_PACKET_SIZE];
         res = llread(fd, buf);
         nump++;
 
@@ -13,8 +14,6 @@ int receiverApplication(int fd, char* path) {
 
         if (parsePacket(buf, res, path) == END_PACKET) 
             break;
-
-        memset(buf, 0, MAX_PACKET_SIZE); // Resets buffer
     }
 
     printf("Received %d packets\n", nump);

@@ -23,12 +23,13 @@ int transmitterApplication(int fd, char* path) {
     }
 
     // Sends DATA packets
-    char buf[MAX_PACKET_SIZE], dataPacket[MAX_PACKET_SIZE];
+    char buf[MAX_PACKET_SIZE];
     unsigned bytes_to_send;
     unsigned sequenceNumber = 0;
     unsigned progress = 0;
 
     while ((bytes_to_send = read(file_fd, buf, MAX_PACKET_SIZE - 4)) > 0) {
+        char dataPacket[MAX_PACKET_SIZE];
         dataPacket[0] = DATA_PACKET;
         dataPacket[1] = sequenceNumber % 255;
         dataPacket[2] = (bytes_to_send / 256);
@@ -44,7 +45,6 @@ int transmitterApplication(int fd, char* path) {
 
         // printf("Sent %d data bytes\n", bytes_to_send+4);
 
-        memset(dataPacket, 0, MAX_PACKET_SIZE);
         sequenceNumber++;
         clearProgressBar();
     }
