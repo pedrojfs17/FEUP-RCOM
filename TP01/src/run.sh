@@ -1,1 +1,1 @@
-gcc -Wall -o writer writenoncanonical.c ll.c state.c utils.c message.c && gcc -Wall -o reader noncanonical.c ll.c state.c utils.c message.c && gcc -Wall -g -o app application.c ll.c state.c utils.c message.c
+gcc -Wall -g -o app application.c ll.c state.c utils.c message.c
