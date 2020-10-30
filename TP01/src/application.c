@@ -93,8 +93,8 @@ int transmitterApplication(int fd, applicationArgs * app) {
     while ((bytes_to_send = read(file_fd, buf, MAX_PACKET_SIZE - 4)) > 0) {
         dataPacket[0] = DATA_PACKET;
         dataPacket[1] = sequenceNumber % 255;
-        dataPacket[2] = bytes_to_send / 256;
-        dataPacket[3] = bytes_to_send % 256;
+        dataPacket[2] = (bytes_to_send / 256);
+        dataPacket[3] = (bytes_to_send % 256);
         memcpy(&dataPacket[4], buf, bytes_to_send);
 
         progress += bytes_to_send;
@@ -157,9 +157,8 @@ int parsePacket(char * buffer, int lenght, applicationArgs * app) {
         return END_PACKET;
     }
     else if (buffer[0] == DATA_PACKET) {
-        // unsigned dataSize = buffer[3] + 256 * buffer[2];
-        // write(destinationFile, &buffer[4], dataSize);
-        // write(destinationFile, &buffer[4], lenght - 4);
+        unsigned dataSize = (unsigned char) buffer[3] + 256 * ((unsigned char) buffer[2]);
+        write(destinationFile, &buffer[4], dataSize);
         return 0;
     }
     else {
