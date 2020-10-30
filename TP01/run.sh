@@ -1,0 +1,1 @@
+gcc -Wall -g -o app src/application.c src/ll.c src/state.c src/utils.c src/message.c src/receiver.c src/transmitter.c
