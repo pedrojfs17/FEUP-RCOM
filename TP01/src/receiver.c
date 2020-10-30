@@ -11,9 +11,11 @@ int receiverApplication(int fd, char* path) {
         nump++;
 
         // TODO add alarm for timeout
-
-        if (parsePacket(buf, res, path) == END_PACKET) 
+        int ret;
+        if ((ret = parsePacket(buf, res, path)) == END_PACKET) 
             break;
+        else if (ret == -1)
+            return -1;
     }
 
     printf("Received %d packets\n", nump);
@@ -25,19 +27,27 @@ int parsePacket(char * buffer, int lenght, char* path) {
 
     if (buffer[0] == START_PACKET) {
         parseControlPacket(buffer, lenght, path);
-        destinationFile = open(path, O_RDWR | O_CREAT, 0777);
+        
+        if ((destinationFile = open(path, O_RDWR | O_CREAT, 0777)) < 0) {
+            perror("Error opening destination file!");
+            return -1;
+        }
+            
         return 0;
-    }
-    else if (buffer[0] == END_PACKET) {
-        close(destinationFile);
+    } else if (buffer[0] == END_PACKET) {
+        if (close(destinationFile) < 0) {
+            perror("Error closing destination file!");
+            return -1;
+        }
         return END_PACKET;
-    }
-    else if (buffer[0] == DATA_PACKET) {
+    } else if (buffer[0] == DATA_PACKET) {
         unsigned dataSize = (unsigned char) buffer[3] + 256 * ((unsigned char) buffer[2]);
-        write(destinationFile, &buffer[4], dataSize);
+        if (write(destinationFile, &buffer[4], dataSize) < 0) {
+            perror("Error writing to destination file!");
+            return -1;
+        }
         return 0;
-    }
-    else {
+    } else {
         printf("Failed on: '");
         for (int i = 0; i < lenght; i++) {
             printf("0x%02x ", buffer[i]);
