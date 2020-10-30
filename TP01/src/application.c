@@ -1,5 +1,27 @@
 #include "application.h"
 
+void clearProgressBar() {
+    int i;
+    for (i = 0; i < NUM_BACKSPACES; ++i) {
+        fprintf(stdout, "\b");
+    }
+    fflush(stdout);
+}
+
+void printProgressBar(int progress, int total) {
+    int i, percentage = (int)((((double)progress) / total) * 100);
+    int num_separators = (int)((((double)progress) / total) * PROGRESS_BAR_SIZE);;
+    fprintf(stdout, "[");
+    for (i = 0; i < num_separators; ++i) {
+        fprintf(stdout, "%c", SEPARATOR_CHAR);
+    }
+    for (; i < PROGRESS_BAR_SIZE; ++i) {
+        fprintf(stdout, " ");
+    }
+    fprintf(stdout, "]  %2d%%  ", percentage);
+    fflush(stdout);
+}
+
 int checkArgs(int argc, char ** argv, applicationArgs * app) {
     if (argc != 5) {
         return -1;
@@ -66,6 +88,7 @@ int transmitterApplication(int fd, applicationArgs * app) {
     char buf[MAX_PACKET_SIZE], dataPacket[MAX_PACKET_SIZE];
     unsigned bytes_to_send;
     unsigned sequenceNumber = 0;
+    unsigned progress = 0;
 
     while ((bytes_to_send = read(file_fd, buf, MAX_PACKET_SIZE - 4)) > 0) {
         dataPacket[0] = DATA_PACKET;
@@ -74,15 +97,21 @@ int transmitterApplication(int fd, applicationArgs * app) {
         dataPacket[3] = bytes_to_send % 256;
         memcpy(&dataPacket[4], buf, bytes_to_send);
 
+        progress += bytes_to_send;
+        printProgressBar(progress, file_stat.st_size);
         if (llwrite(fd, dataPacket, ((bytes_to_send + 4) < MAX_PACKET_SIZE)? (bytes_to_send + 4) : MAX_PACKET_SIZE) < 0) { // Only sends max packet if the last packet is of that size
             perror("llwrite failed");
             return -1;
         }
 
+        // printf("Sent %d data bytes\n", bytes_to_send+4);
+
         memset(dataPacket, 0, MAX_PACKET_SIZE);
         sequenceNumber++;
+        clearProgressBar();
     }
 
+    printProgressBar(1, 1);
     printf("Data packets sent: %d\n",sequenceNumber);
 
     // Sends END packet
@@ -97,9 +126,13 @@ int transmitterApplication(int fd, applicationArgs * app) {
 int receiverApplication(int fd, applicationArgs * app) {
     char buf[MAX_PACKET_SIZE];
     int res;
+    int nump = 0;
 
     while (1) {
         res = llread(fd, buf);
+        nump++;
+
+        // TODO add alarm for timeout
 
         if (parsePacket(buf, res, app) == END_PACKET) 
             break;
@@ -107,6 +140,7 @@ int receiverApplication(int fd, applicationArgs * app) {
         memset(buf, 0, MAX_PACKET_SIZE); // Resets buffer
     }
 
+    printf("Received %d packets\n", nump);
     return 0;
 }
 
@@ -123,8 +157,9 @@ int parsePacket(char * buffer, int lenght, applicationArgs * app) {
         return END_PACKET;
     }
     else if (buffer[0] == DATA_PACKET) {
-        unsigned dataSize = buffer[3] + 256 * buffer[2];
-        write(destinationFile, &buffer[4], dataSize);
+        // unsigned dataSize = buffer[3] + 256 * buffer[2];
+        // write(destinationFile, &buffer[4], dataSize);
+        // write(destinationFile, &buffer[4], lenght - 4);
         return 0;
     }
     else {

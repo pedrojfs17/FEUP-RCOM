@@ -20,6 +20,10 @@
 #define FILE_SIZE 0
 #define FILE_NAME 1
 
+#define PROGRESS_BAR_SIZE   30
+#define SEPARATOR_CHAR      '='
+#define NUM_BACKSPACES      PROGRESS_BAR_SIZE + 9
+
 typedef struct {
     int port;
     int role;
