@@ -17,7 +17,7 @@
 
 #define NO_RESPONSE -1
 
-void atende();
+void alarm_handler();
 
 int sendSupervivionMessage(int fd, char address, char control, mode responseType);
 

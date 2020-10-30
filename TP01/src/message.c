@@ -1,9 +1,9 @@
 #include "message.h"
 
-int retry = FALSE;
+int alarm_flag = FALSE;
 
-void atende() {
-    retry = TRUE;
+void alarm_handler() {
+    alarm_flag = TRUE;
 }
 
 int sendSupervivionMessage(int fd, char address, char control, mode responseType) {
@@ -77,7 +77,7 @@ int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseTy
 
     do {
         numTries++;
-        retry = FALSE;
+        alarm_flag = FALSE;
 
         if ((ret = write(fd, msg, messageSize)) == -1) {
             perror("WRITE FAILURE!\n");
@@ -87,7 +87,7 @@ int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseTy
 
         int res;
         unsigned char buf[MAX_BUFFER_SIZE];
-        while (getState() != STOP && !retry) {
+        while (getState() != STOP && !alarm_flag) {
             res = read(fd, buf, 1);
             if (res == 0) continue;
             // printf("Byte: %#4.2x\n", buf[0]);
@@ -115,14 +115,22 @@ int readMessage(int fd, char * message, mode responseType) {
     configStateMachine(responseType);
     int res, numBytesRead = 0;
     unsigned char buf[MAX_BUFFER_SIZE];
+    alarm_flag = FALSE;
 
-    while (getState() != STOP) {
+    alarm(7);
+    
+    while (getState() != STOP && !alarm_flag) {
         res = read(fd, buf, 1);
         if (res == 0) continue;
-        // printf("Byte: %#4.2x\n", buf[0]);
+        alarm(0);
         message[numBytesRead++] = buf[0];
         updateState(buf[0]);
+        alarm(7);
     }
+
+    if (alarm_flag) return -1;
+
+    alarm(0);
 
     return numBytesRead;
 }

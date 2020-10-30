@@ -29,8 +29,8 @@ int llopen(int port, int role) {
     /* set input mode (non-canonical, no echo,...) */
     newtio.c_lflag = 0;
  
-    newtio.c_cc[VTIME]    = (role)? 0 : 1;   /* inter-character timer unused */
-    newtio.c_cc[VMIN]     = (role)? 1 : 0;   /* blocking read until 5 chars received */
+    newtio.c_cc[VTIME]    = 1;   /* inter-character timer unused */
+    newtio.c_cc[VMIN]     = 0;   /* blocking read until 5 chars received */
  
     tcflush(fd, TCIOFLUSH);
  
@@ -41,7 +41,7 @@ int llopen(int port, int role) {
  
     printf("New termios structure set\n");
 
-    signal(SIGALRM, atende);
+    signal(SIGALRM, alarm_handler);
 
     switch (role) {
         case RECEIVER:
@@ -67,7 +67,7 @@ int llopen(int port, int role) {
 
 int recv_init(int fd) {
     char message[5];
-    readMessage(fd, message, COMMAND_SET);
+    if (readMessage(fd, message, COMMAND_SET) < 0) return -1;
     return sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
 }
 
@@ -91,7 +91,11 @@ int llwrite(int fd, char * buffer, int lenght) {
 int llread(int fd, char * buffer) {
     static int packet = 0;
     char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_BUFFER_SIZE]; // MAX MESSAGE SIZE
-    int numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA);
+    int numBytesRead;
+    if ((numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA)) < 0) {
+        perror("Read operation failed");
+        return -1;
+    }
     int res = messageDestuffing(stuffedMessage, 1, numBytesRead - 1, unstuffedMessage);
     
     char receivedBCC2 = unstuffedMessage[res - 1];
@@ -99,7 +103,7 @@ int llread(int fd, char * buffer) {
 
     if (receivedBCC2 == receivedDataBCC2) {
         packet = (packet + 1) % 2;
-        sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE);
+        if (sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE) < 0) return -1;
         memcpy(buffer, &unstuffedMessage[4], res-5);
         return res - 5;
     }
@@ -138,12 +142,12 @@ int llclose(int fd) {
 int recv_disc(int fd) {
     printf("DISCONNECTING RECEIVER...\n");
     char message[5];
-    readMessage(fd, message, COMMAND_DISC);
+    if (readMessage(fd, message, COMMAND_DISC) < 0) return -1;
     return sendSupervivionMessage(fd, MSG_A_RECV_COMMAND, MSG_CTRL_DISC, RESPONSE_UA);
 }
 
 int trans_disc(int fd) {
     printf("DISCONNECTING TRANSMITTER...\n");
-    sendSupervivionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_DISC, COMMAND_DISC);
+    if (sendSupervivionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_DISC, COMMAND_DISC) < 0) return -1;
     return sendSupervivionMessage(fd, MSG_A_TRANS_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
 }

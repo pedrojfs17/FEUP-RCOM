@@ -1,16 +1,14 @@
 #include "receiver.h"
 
 int receiverApplication(int fd, char* path) {
-    
     int res;
     int nump = 0;
 
     while (1) {
         char buf[MAX_PACKET_SIZE];
-        res = llread(fd, buf);
+        if ((res = llread(fd, buf)) < 0) return -1;
         nump++;
 
-        // TODO add alarm for timeout
         int ret;
         if ((ret = parsePacket(buf, res, path)) == END_PACKET) 
             break;
