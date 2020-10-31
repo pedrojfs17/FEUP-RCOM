@@ -12,7 +12,11 @@ int main(int argc, char** argv)
         return -1;
     }
 
-    printf("App initialized!\nPort: %d\nRole: %d\nPath: %s\n", app.port, app.role, app.path);
+    printf("App initialized!\nPath: %s\n", app.path);
+
+    // Start Clock
+    struct timeval beginTime, endTime;
+    gettimeofday(&beginTime, NULL);
 
     int fd;
 
@@ -38,6 +42,14 @@ int main(int argc, char** argv)
         perror("llclose failed");
         return -1;
     }
+
+    // Get Elapsed Time
+    gettimeofday(&endTime, NULL);
+    
+    double elapsed = (endTime.tv_sec - beginTime.tv_sec) * 1e6;
+    elapsed = (elapsed + (endTime.tv_usec - beginTime.tv_usec)) * 1e-6;
+
+    printf("Elapsed: %.2lf seconds\n", elapsed);
 
     return 0;
 }
