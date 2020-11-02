@@ -77,11 +77,9 @@ int trans_init(int fd) {
 
 int llwrite(int fd, char * buffer, int lenght) {
     static int packet = 0;
-
-    char bcc2 = BCC2(buffer, lenght, 0);
-
+    
     int ret;
-    if ((ret = sendDataMessage(fd, buffer, lenght, bcc2, packet)) > -1) {
+    if ((ret = sendDataMessage(fd, buffer, lenght, packet)) > -1) {
         packet = (packet + 1) % 2;
         return ret;
     }

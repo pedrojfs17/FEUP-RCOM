@@ -21,7 +21,7 @@ void alarm_handler();
 
 int sendSupervivionMessage(int fd, char address, char control, mode responseType);
 
-int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet);
+int sendDataMessage(int fd, char * data, int dataSize, int packet);
 
 int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseType);
 
