@@ -74,7 +74,7 @@ int checkArgs(int argc, char ** argv, applicationArgs * app) {
             if (i + 1 == argc || app->port != -1){
                 return -1;
             }
-            if (atoi(argv[i+1]) > 0){
+            if (atoi(argv[i+1]) >= 0){
                 app->port = atoi(argv[i+1]);
                 i++;
             }
