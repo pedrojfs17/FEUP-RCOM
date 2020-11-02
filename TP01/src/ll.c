@@ -88,7 +88,7 @@ int llwrite(int fd, char * buffer, int lenght) {
 
 int llread(int fd, char * buffer) {
     static int packet = 0;
-    char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_BUFFER_SIZE]; // MAX MESSAGE SIZE
+    char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_PACKET_SIZE]; // MAX MESSAGE SIZE
     int numBytesRead;
     if ((numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA)) < 0) {
         perror("Read operation failed");

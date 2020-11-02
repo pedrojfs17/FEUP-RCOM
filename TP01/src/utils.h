@@ -19,3 +19,5 @@ char BCC2(char * data, int dataSize, int startingByte);
 void clearProgressBar();
 
 void printProgressBar(int progress, int total);
+
+char * getFilename(char * path);
