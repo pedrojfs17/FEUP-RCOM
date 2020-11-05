@@ -29,7 +29,7 @@ int sendSupervivionMessage(int fd, char address, char control, mode responseType
     }
 }
 
-int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
+int sendDataMessage(int fd, char * data, int dataSize, int packet) {
     int msgSize = dataSize + 5;
 
     char msg[msgSize];
@@ -38,8 +38,10 @@ int sendDataMessage(int fd, char * data, int dataSize, char bcc2, int packet) {
     msg[1] = MSG_A_TRANS_COMMAND;
     msg[2] = MSG_CTRL_S(packet);
     msg[3] = BCC(MSG_A_TRANS_COMMAND, MSG_CTRL_S(packet));
+    char bcc2 = data[0];
     for (int i = 0; i < dataSize; i++) {
         msg[i + 4] = data[i];
+        if (i > 0) bcc2 ^= data[i];
     }
     msg[dataSize + 4] = bcc2;
 

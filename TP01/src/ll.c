@@ -77,11 +77,9 @@ int trans_init(int fd) {
 
 int llwrite(int fd, char * buffer, int lenght) {
     static int packet = 0;
-
-    char bcc2 = BCC2(buffer, lenght, 0);
-
+    
     int ret;
-    if ((ret = sendDataMessage(fd, buffer, lenght, bcc2, packet)) > -1) {
+    if ((ret = sendDataMessage(fd, buffer, lenght, packet)) > -1) {
         packet = (packet + 1) % 2;
         return ret;
     }
@@ -90,7 +88,7 @@ int llwrite(int fd, char * buffer, int lenght) {
 
 int llread(int fd, char * buffer) {
     static int packet = 0;
-    char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_BUFFER_SIZE]; // MAX MESSAGE SIZE
+    char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_PACKET_SIZE]; // MAX MESSAGE SIZE
     int numBytesRead;
     if ((numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA)) < 0) {
         perror("Read operation failed");
@@ -130,6 +128,8 @@ int llclose(int fd) {
         default:
             return -1;
     }
+
+    sleep(1);
 
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
         perror("tcsetattr");

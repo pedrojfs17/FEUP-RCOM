@@ -6,7 +6,8 @@
 #include "message_defs.h"
 
 #define PROGRESS_BAR_SIZE   30
-#define SEPARATOR_CHAR      '='
+#define SEPARATOR_CHAR      '#'
+#define EMPTY_CHAR          '.'
 #define NUM_BACKSPACES      PROGRESS_BAR_SIZE + 9
 
 int messageStuffing(char * buffer, int startingByte, int lenght, char * stuffedMessage);
@@ -18,3 +19,5 @@ char BCC2(char * data, int dataSize, int startingByte);
 void clearProgressBar();
 
 void printProgressBar(int progress, int total);
+
+char * getFilename(char * path);

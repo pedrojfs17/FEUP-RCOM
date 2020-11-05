@@ -16,8 +16,11 @@ int transmitterApplication(int fd, char* path) {
         return -1;
     }
 
+    // Get the file name
+    char * filename = getFilename(path);
+
     // Sends START packet
-    if (sendControlPacket(fd, START_PACKET, file_stat.st_size, path) < 0) {
+    if (sendControlPacket(fd, START_PACKET, file_stat.st_size, filename) < 0) {
         perror("Error sending START packet.");
         return -1;
     }
@@ -53,7 +56,7 @@ int transmitterApplication(int fd, char* path) {
     printf("Data packets sent: %d\n",sequenceNumber);
 
     // Sends END packet
-    if (sendControlPacket(fd, END_PACKET, file_stat.st_size, path) < 0) {
+    if (sendControlPacket(fd, END_PACKET, file_stat.st_size, filename) < 0) {
         perror("Error sending END packet.");
         return -1;
     }

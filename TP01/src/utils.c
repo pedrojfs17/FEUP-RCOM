@@ -64,8 +64,18 @@ void printProgressBar(int progress, int total) {
         fprintf(stdout, "%c", SEPARATOR_CHAR);
     }
     for (; i < PROGRESS_BAR_SIZE; ++i) {
-        fprintf(stdout, " ");
+        fprintf(stdout, "%c", EMPTY_CHAR);
     }
     fprintf(stdout, "]  %2d%%  ", percentage);
     fflush(stdout);
+}
+
+char * getFilename(char * path) {
+    char * filename = path, *p;
+    for (p = path; *p; p++) {
+        if (*p == '/' || *p == '\\' || *p == ':') {
+            filename = p;
+        }
+    }
+    return filename;
 }
