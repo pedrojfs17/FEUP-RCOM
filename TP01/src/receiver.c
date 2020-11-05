@@ -3,10 +3,17 @@
 int receiverApplication(int fd, char* path) {
     int res;
     int nump = 0;
+    int numTries = 0;
 
     while (1) {
         char buf[MAX_PACKET_SIZE];
-        if ((res = llread(fd, buf)) < 0) return -1;
+        if ((res = llread(fd, buf)) < 0) {
+            if (numTries >= 3) return -1;
+            numTries++;
+            continue;
+        }
+
+        numTries = 0;
         nump++;
 
         int ret;
