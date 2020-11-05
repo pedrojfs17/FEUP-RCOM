@@ -9,15 +9,15 @@ int llopen(int port, int role) {
     sprintf(ll.port, "/dev/ttyS%d", port);
 
     int fd = open(ll.port, O_RDWR | O_NOCTTY);
-    if (fd < 0) { 
-        perror(ll.port);
+    if (fd < 0) {
+        perror("Error opening serial port");
         return -1;
     }
 
     struct termios newtio;
 
     if (tcgetattr(fd, &oldtio) == -1) { /* save current port settings */
-        perror("tcgetattr");
+        perror("tcgetattr failed");
         return -1;
     }
 
@@ -35,7 +35,7 @@ int llopen(int port, int role) {
     tcflush(fd, TCIOFLUSH);
  
     if (tcsetattr(fd, TCSANOW, &newtio) == -1) {
-        perror("tcsetattr");
+        perror("tcsetattr failed to set new termios struct");
         return -1;
     }
  
@@ -47,14 +47,14 @@ int llopen(int port, int role) {
         case RECEIVER:
             setStateMachineRole(RECEIVER);
             if (recv_init(fd) < 0){
-                perror("Could not start RECEIVER");
+                fprintf(stderr, "Could not start RECEIVER\n");
                 return -1;
             }
             break;
         case TRANSMITTER:
             setStateMachineRole(TRANSMITTER);
             if (trans_init(fd) < 0){
-                perror("Could not start TRANSMITTER");
+                fprintf(stderr, "Could not start TRANSMITTER\n");
                 return -1;
             }
             break;
@@ -91,7 +91,7 @@ int llread(int fd, char * buffer) {
     char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_PACKET_SIZE]; // MAX MESSAGE SIZE
     int numBytesRead;
     if ((numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA)) < 0) {
-        perror("Read operation failed");
+        fprintf(stderr, "Read operation failed\n");
         return -1;
     }
     int res = messageDestuffing(stuffedMessage, 1, numBytesRead - 1, unstuffedMessage);
@@ -115,13 +115,13 @@ int llclose(int fd) {
     switch (getRole()) {
         case RECEIVER:
             if (recv_disc(fd) < 0){
-                perror("Could not disconnect RECEIVER");
+                fprintf(stderr, "Could not disconnect RECEIVER\n");
                 return -1;
             }
             break;
         case TRANSMITTER:
             if (trans_disc(fd) < 0){
-                perror("Could not disconnect TRANSMITTER");
+                fprintf(stderr, "Could not disconnect TRANSMITTER\n");
                 return -1;
             }
             break;
@@ -132,7 +132,7 @@ int llclose(int fd) {
     sleep(1);
 
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1) {
-        perror("tcsetattr");
+        perror("tcsetattr failed to set old termios struct");
         exit(-1);
     }
  

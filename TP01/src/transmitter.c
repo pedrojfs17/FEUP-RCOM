@@ -21,7 +21,7 @@ int transmitterApplication(int fd, char* path) {
 
     // Sends START packet
     if (sendControlPacket(fd, START_PACKET, file_stat.st_size, filename) < 0) {
-        perror("Error sending START packet.");
+        fprintf(stderr, "Error sending START packet.\n");
         return -1;
     }
 
@@ -42,7 +42,7 @@ int transmitterApplication(int fd, char* path) {
         progress += bytes_to_send;
         printProgressBar(progress, file_stat.st_size);
         if (llwrite(fd, dataPacket, ((bytes_to_send + 4) < MAX_PACKET_SIZE)? (bytes_to_send + 4) : MAX_PACKET_SIZE) < 0) { // Only sends max packet if the last packet is of that size
-            perror("llwrite failed");
+            fprintf(stderr, "llwrite failed\n");
             return -1;
         }
 
@@ -57,7 +57,7 @@ int transmitterApplication(int fd, char* path) {
 
     // Sends END packet
     if (sendControlPacket(fd, END_PACKET, file_stat.st_size, filename) < 0) {
-        perror("Error sending END packet.");
+        fprintf(stderr, "Error sending END packet.\n");
         return -1;
     }
 

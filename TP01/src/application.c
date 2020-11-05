@@ -8,7 +8,7 @@ int main(int argc, char** argv)
     app.path[0] = '\0';
 
     if (checkArgs(argc, argv, &app) < 0) {
-        perror("Usage: ./app -p <port> (-r | -t) <path>");
+        fprintf(stderr, "Invalid args. Usage: ./app -p <port> (-r | -t) <path>");
         return -1;
     }
 
@@ -21,25 +21,25 @@ int main(int argc, char** argv)
     int fd;
 
     if ((fd = llopen(app.port, app.role)) < 0) {
-        perror("llopen failed");
+        fprintf(stderr, "llopen failed\n");
         return -1;
     }
 
     if (app.role == TRANSMITTER) {
         if (transmitterApplication(fd, app.path) < 0) {
-            perror("Transmitter Application failed");
+            fprintf(stderr, "Transmitter Application failed\n");
             return -1;
         }
     }
     else {
         if (receiverApplication(fd, app.path) < 0) {
-            perror("Receiver Application failed");
+            fprintf(stderr, "Receiver Application failed\n");
             return -1;
         }
     }
     
     if (llclose(fd) < 0){
-        perror("llclose failed");
+        fprintf(stderr, "llclose failed\n");
         return -1;
     }
 
@@ -89,7 +89,6 @@ int checkArgs(int argc, char ** argv, applicationArgs * app) {
 
     if (app->path[0] == '\0') return -1;
     if (app->role != TRANSMITTER && app->role != RECEIVER) return -1;
-    if (app->port != 0 && app->port != 1 && app->port != 10 && app->port != 11) return -1;
 
     return 0;
 }
