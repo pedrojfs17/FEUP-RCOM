@@ -26,13 +26,13 @@ int transmitterApplication(int fd, char* path) {
     }
 
     // Sends DATA packets
-    char buf[MAX_PACKET_SIZE];
+    unsigned char buf[MAX_PACKET_SIZE];
     unsigned bytes_to_send;
     unsigned sequenceNumber = 0;
     unsigned progress = 0;
 
     while ((bytes_to_send = read(file_fd, buf, MAX_PACKET_SIZE - 4)) > 0) {
-        char dataPacket[MAX_PACKET_SIZE];
+        unsigned char dataPacket[MAX_PACKET_SIZE];
         dataPacket[0] = DATA_PACKET;
         dataPacket[1] = sequenceNumber % 255;
         dataPacket[2] = (bytes_to_send / 256);
@@ -66,12 +66,12 @@ int transmitterApplication(int fd, char* path) {
 
 
 
-int sendControlPacket(int fd, char ctrl_field, unsigned file_size, char* file_name) {
+int sendControlPacket(int fd, unsigned char ctrl_field, unsigned file_size, char* file_name) {
     unsigned L1 = sizeof(file_size);
     unsigned L2 = strlen(file_name);
     unsigned packet_size = 5 + L1 + L2;
 
-    char packet[packet_size];
+    unsigned char packet[packet_size];
     packet[0] = ctrl_field;
     packet[1] = FILE_SIZE;
     packet[2] = L1;

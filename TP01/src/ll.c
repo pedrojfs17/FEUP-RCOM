@@ -66,7 +66,7 @@ int llopen(int port, int role) {
 }
 
 int recv_init(int fd) {
-    char message[5];
+    unsigned char message[5];
     if (readMessage(fd, message, COMMAND_SET) < 0) return -1;
     return sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
 }
@@ -75,7 +75,7 @@ int trans_init(int fd) {
     return sendSupervivionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_SET, RESPONSE_UA);
 }
 
-int llwrite(int fd, char * buffer, int lenght) {
+int llwrite(int fd, unsigned char * buffer, int lenght) {
     static int packet = 0;
     
     int ret;
@@ -86,9 +86,9 @@ int llwrite(int fd, char * buffer, int lenght) {
     else return -1;
 }
 
-int llread(int fd, char * buffer) {
+int llread(int fd, unsigned char * buffer) {
     static int packet = 0;
-    char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_PACKET_SIZE]; // MAX MESSAGE SIZE
+    unsigned char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_PACKET_SIZE]; // MAX MESSAGE SIZE
     int numBytesRead;
     if ((numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA)) < 0) {
         fprintf(stderr, "Read operation failed\n");
@@ -96,8 +96,8 @@ int llread(int fd, char * buffer) {
     }
     int res = messageDestuffing(stuffedMessage, 1, numBytesRead - 1, unstuffedMessage);
     
-    char receivedBCC2 = unstuffedMessage[res - 1];
-    char receivedDataBCC2 = BCC2(unstuffedMessage, res - 1, 4);
+    unsigned char receivedBCC2 = unstuffedMessage[res - 1];
+    unsigned char receivedDataBCC2 = BCC2(unstuffedMessage, res - 1, 4);
 
     if (receivedBCC2 == receivedDataBCC2) {
         packet = (packet + 1) % 2;
@@ -141,7 +141,7 @@ int llclose(int fd) {
 
 int recv_disc(int fd) {
     printf("DISCONNECTING RECEIVER...\n");
-    char message[5];
+    unsigned char message[5];
     if (readMessage(fd, message, COMMAND_DISC) < 0) return -1;
     return sendSupervivionMessage(fd, MSG_A_RECV_COMMAND, MSG_CTRL_DISC, RESPONSE_UA);
 }

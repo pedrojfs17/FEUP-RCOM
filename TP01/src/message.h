@@ -19,12 +19,12 @@
 
 void alarm_handler();
 
-int sendSupervivionMessage(int fd, char address, char control, mode responseType);
+int sendSupervivionMessage(int fd, unsigned char address, unsigned char control, mode responseType);
 
-int sendDataMessage(int fd, char * data, int dataSize, int packet);
+int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet);
 
-int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseType);
+int sendMessageWithResponse(int fd, unsigned char * msg, int messageSize, mode responseType);
 
-int sendMessageWithoutResponse(int fd, char * msg, int messageSize);
+int sendMessageWithoutResponse(int fd, unsigned char * msg, int messageSize);
 
-int readMessage(int fd, char * message, mode responseType);
+int readMessage(int fd, unsigned char * message, mode responseType);

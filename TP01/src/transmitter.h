@@ -14,4 +14,4 @@
 
 int transmitterApplication(int fd, char* path);
 
-int sendControlPacket(int fd, char ctrl_field, unsigned file_size, char* file_name);
+int sendControlPacket(int fd, unsigned char ctrl_field, unsigned file_size, char* file_name);

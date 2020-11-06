@@ -1,6 +1,6 @@
 #include "utils.h"
 
-int messageStuffing(char * buffer, int startingByte, int lenght, char * stuffedMessage) {
+int messageStuffing(unsigned char * buffer, int startingByte, int lenght, unsigned char * stuffedMessage) {
     int messageSize = 0;
 
     for (int i = 0; i < startingByte; i++)
@@ -19,7 +19,7 @@ int messageStuffing(char * buffer, int startingByte, int lenght, char * stuffedM
     return messageSize;
 }
 
-int messageDestuffing(char * buffer, int startingByte, int lenght, char * destuffedMessage) {
+int messageDestuffing(unsigned char * buffer, int startingByte, int lenght, unsigned char * destuffedMessage) {
     int messageSize = 0;
 
     for (int i = 0; i < startingByte; i++) {
@@ -39,8 +39,8 @@ int messageDestuffing(char * buffer, int startingByte, int lenght, char * destuf
     return messageSize;
 }
 
-char BCC2(char * data, int dataSize, int startingByte) {
-    char bcc = data[startingByte];
+unsigned char BCC2(unsigned char * data, int dataSize, int startingByte) {
+    unsigned char bcc = data[startingByte];
 
     for(int i = startingByte + 1; i < dataSize; i++)
         bcc ^= data[i];

@@ -6,8 +6,8 @@ void alarm_handler() {
     alarm_flag = TRUE;
 }
 
-int sendSupervivionMessage(int fd, char address, char control, mode responseType) {
-    char msg[5] = {
+int sendSupervivionMessage(int fd, unsigned char address, unsigned char control, mode responseType) {
+    unsigned char msg[5] = {
         MSG_FLAG, 
         address, 
         control, 
@@ -29,23 +29,23 @@ int sendSupervivionMessage(int fd, char address, char control, mode responseType
     }
 }
 
-int sendDataMessage(int fd, char * data, int dataSize, int packet) {
+int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet) {
     int msgSize = dataSize + 5;
 
-    char msg[msgSize];
+    unsigned char msg[msgSize];
 
     msg[0] = MSG_FLAG;
     msg[1] = MSG_A_TRANS_COMMAND;
     msg[2] = MSG_CTRL_S(packet);
     msg[3] = BCC(MSG_A_TRANS_COMMAND, MSG_CTRL_S(packet));
-    char bcc2 = data[0];
+    unsigned char bcc2 = data[0];
     for (int i = 0; i < dataSize; i++) {
         msg[i + 4] = data[i];
         if (i > 0) bcc2 ^= data[i];
     }
     msg[dataSize + 4] = bcc2;
 
-    char stuffedData[msgSize * 2];
+    unsigned char stuffedData[msgSize * 2];
     msgSize = messageStuffing(msg, 1, msgSize, stuffedData);
     stuffedData[msgSize] = MSG_FLAG;
     msgSize++;
@@ -71,7 +71,7 @@ int sendDataMessage(int fd, char * data, int dataSize, int packet) {
         return ret;
 }
 
-int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseType) {
+int sendMessageWithResponse(int fd, unsigned char * msg, int messageSize, mode responseType) {
     configStateMachine(responseType);
 
     int numTries = 0;
@@ -106,14 +106,14 @@ int sendMessageWithResponse(int fd, char * msg, int messageSize, mode responseTy
     return ret;
 }
 
-int sendMessageWithoutResponse(int fd, char * msg, int messageSize) {
+int sendMessageWithoutResponse(int fd, unsigned char * msg, int messageSize) {
     if (write(fd, msg, messageSize) == -1) {
         perror("WRITE FAILURE!\n");
     }
     return 0;
 }
 
-int readMessage(int fd, char * message, mode responseType) {
+int readMessage(int fd, unsigned char * message, mode responseType) {
     configStateMachine(responseType);
     int res, numBytesRead = 0;
     unsigned char buf[MAX_BUFFER_SIZE];

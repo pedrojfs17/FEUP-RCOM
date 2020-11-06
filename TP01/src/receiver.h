@@ -12,6 +12,6 @@
 
 int receiverApplication(int fd, char* path);
 
-int parsePacket(char * buffer, int lenght, char* path);
+int parsePacket(unsigned char * buffer, int lenght, char* path);
 
-void parseControlPacket(char * buffer, int lenght, char* path);
+void parseControlPacket(unsigned char * buffer, int lenght, char* path);

@@ -6,7 +6,7 @@ int receiverApplication(int fd, char* path) {
     int numTries = 0;
 
     while (1) {
-        char buf[MAX_PACKET_SIZE];
+        unsigned char buf[MAX_PACKET_SIZE];
         if ((res = llread(fd, buf)) < 0) {
             if (numTries >= 3) return -1;
             numTries++;
@@ -27,17 +27,17 @@ int receiverApplication(int fd, char* path) {
     return 0;
 }
 
-int parsePacket(char * buffer, int lenght, char* path) {
+int parsePacket(unsigned char * buffer, int lenght, char* path) {
     static int destinationFile;
 
     if (buffer[0] == START_PACKET) {
         parseControlPacket(buffer, lenght, path);
         
-        if ((destinationFile = open(path, O_RDWR | O_CREAT, 0777)) < 0) {
+        if ((destinationFile = open(path, O_WRONLY | O_CREAT, 0777)) < 0) {
             perror("Error opening destination file!");
             return -1;
         }
-            
+
         return 0;
     } else if (buffer[0] == END_PACKET) {
         if (close(destinationFile) < 0) {
@@ -46,7 +46,7 @@ int parsePacket(char * buffer, int lenght, char* path) {
         }
         return END_PACKET;
     } else if (buffer[0] == DATA_PACKET) {
-        unsigned dataSize = (unsigned char) buffer[3] + 256 * ((unsigned char) buffer[2]);
+        unsigned dataSize = buffer[3] + 256 * buffer[2];
         if (write(destinationFile, &buffer[4], dataSize) < 0) {
             perror("Error writing to destination file!");
             return -1;
@@ -62,7 +62,7 @@ int parsePacket(char * buffer, int lenght, char* path) {
     }
 }
 
-void parseControlPacket(char * buffer, int lenght, char* path) {
+void parseControlPacket(unsigned char * buffer, int lenght, char* path) {
     // unsigned fileSize = 0;
 
     for (int i = 1; i < lenght; i++) {
@@ -77,7 +77,12 @@ void parseControlPacket(char * buffer, int lenght, char* path) {
 
         if (buffer[i] == FILE_NAME) {
             i++; // i is now in the byte with information about the number of bytes
-            strcat(path, &buffer[i+1]);
+            char fileName[buffer[i] + 1];
+            for (int j = 0; j < buffer[i]; j++) {
+                fileName[j] = buffer[i + j + 1];
+            }
+            fileName[buffer[i]] = '\0';
+            strcat(path, fileName);
             i += buffer[i];
         }
     }

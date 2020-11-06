@@ -34,5 +34,5 @@ int llclose(int fd);
 int recv_disc(int fd);
 int trans_disc(int fd);
 
-int llwrite(int fd, char * buffer, int lenght);
-int llread(int fd, char * buffer);
+int llwrite(int fd, unsigned char * buffer, int lenght);
+int llread(int fd, unsigned char * buffer);

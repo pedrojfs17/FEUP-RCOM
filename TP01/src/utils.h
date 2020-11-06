@@ -10,11 +10,11 @@
 #define EMPTY_CHAR          '.'
 #define NUM_BACKSPACES      PROGRESS_BAR_SIZE + 9
 
-int messageStuffing(char * buffer, int startingByte, int lenght, char * stuffedMessage);
+int messageStuffing(unsigned char * buffer, int startingByte, int lenght, unsigned char * stuffedMessage);
 
-int messageDestuffing(char * buffer, int startingByte, int lenght, char * destuffedMessage);
+int messageDestuffing(unsigned char * buffer, int startingByte, int lenght, unsigned char * destuffedMessage);
 
-char BCC2(char * data, int dataSize, int startingByte);
+unsigned char BCC2(unsigned char * data, int dataSize, int startingByte);
 
 void clearProgressBar();
 
