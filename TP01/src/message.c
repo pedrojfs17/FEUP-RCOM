@@ -29,7 +29,11 @@ int sendSupervivionMessage(int fd, unsigned char address, unsigned char control,
     }
 }
 
+//int wrongBcc = 0;
+
 int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet) {
+    //wrongBcc++;
+
     int msgSize = dataSize + 5;
 
     unsigned char msg[msgSize];
@@ -43,6 +47,8 @@ int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet) {
         msg[i + 4] = data[i];
         if (i > 0) bcc2 ^= data[i];
     }
+    //if (wrongBcc % 5000 == 0)
+        //bcc2 ^= 0xFF;
     msg[dataSize + 4] = bcc2;
 
     unsigned char stuffedData[msgSize * 2];
@@ -60,13 +66,17 @@ int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet) {
 
         response_type response = getLastResponse();
 
-        if ((packet == 0 && response == R_RR1) || (packet == 1 && response == R_RR0)) {
+        if (ret > 0 && ((packet == 0 && response == R_RR1) || (packet == 1 && response == R_RR0))) {
             receivedACK = TRUE;
+        } else if (ret > 0) {
+            fprintf(stderr, "\nReceived response is invalid. Trying again...");
         }
     } while (numTries < 3 && !receivedACK);
 
-    if (!receivedACK)
+    if (!receivedACK) {
+        fprintf(stderr, "\nFailed to get ACK\n");
         return -1;
+    }
     else
         return ret;
 }
@@ -82,7 +92,7 @@ int sendMessageWithResponse(int fd, unsigned char * msg, int messageSize, mode r
         alarm_flag = FALSE;
 
         if ((ret = write(fd, msg, messageSize)) == -1) {
-            perror("WRITE FAILURE!\n");
+            fprintf(stderr, "Write failed\n");
         }
 
         alarm(3);
@@ -100,15 +110,17 @@ int sendMessageWithResponse(int fd, unsigned char * msg, int messageSize, mode r
 
     alarm(0);
 
-    if (getState() != STOP)
+    if (getState() != STOP) {
+        fprintf(stderr, "Failed to get response!\n");
         return -1;
+    }
 
     return ret;
 }
 
 int sendMessageWithoutResponse(int fd, unsigned char * msg, int messageSize) {
     if (write(fd, msg, messageSize) == -1) {
-        perror("WRITE FAILURE!\n");
+        fprintf(stderr, "Write failed\n");
     }
     return 0;
 }
@@ -121,7 +133,7 @@ int readMessage(int fd, unsigned char * message, mode responseType) {
 
     alarm(7);
     
-    while (getState() != STOP && !alarm_flag) {
+    while (getState() != STOP && !alarm_flag && numBytesRead < MAX_BUFFER_SIZE) {
         res = read(fd, buf, 1);
         if (res == 0) continue;
         alarm(0);
@@ -130,9 +142,17 @@ int readMessage(int fd, unsigned char * message, mode responseType) {
         alarm(7);
     }
 
-    if (alarm_flag) return -1;
-
     alarm(0);
+
+    if (alarm_flag) {
+        fprintf(stderr, "Alarm fired. readMessage took too long\n");
+        return -1;
+    }
+
+    if (getState() != STOP) {
+        fprintf(stderr, "Failed to read message\n");
+        return -1;
+    }
 
     return numBytesRead;
 }

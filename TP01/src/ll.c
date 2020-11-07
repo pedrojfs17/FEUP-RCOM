@@ -79,16 +79,23 @@ int llwrite(int fd, unsigned char * buffer, int lenght) {
     static int packet = 0;
     
     int ret;
-    if ((ret = sendDataMessage(fd, buffer, lenght, packet)) > -1) {
-        packet = (packet + 1) % 2;
-        return ret;
+    int numTries = 0;
+
+    while (numTries < 3) {
+        numTries++;
+        if ((ret = sendDataMessage(fd, buffer, lenght, packet)) > -1) {
+            packet = (packet + 1) % 2;
+            return ret;
+        }
+        fprintf(stderr, "sendDataMessage failed\n");
     }
-    else return -1;
+
+    return -1;
 }
 
 int llread(int fd, unsigned char * buffer) {
     static int packet = 0;
-    unsigned char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_PACKET_SIZE]; // MAX MESSAGE SIZE
+    unsigned char stuffedMessage[MAX_BUFFER_SIZE], unstuffedMessage[MAX_PACKET_SIZE + 7]; // MAX MESSAGE SIZE
     int numBytesRead;
     if ((numBytesRead = readMessage(fd, stuffedMessage, COMMAND_DATA)) < 0) {
         fprintf(stderr, "Read operation failed\n");
@@ -107,6 +114,7 @@ int llread(int fd, unsigned char * buffer) {
     }
     else {
         sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_REJ(packet), NO_RESPONSE);
+        fprintf(stderr, "Error in BCC2, sent REJ!\n");
         return -1;
     }
 }

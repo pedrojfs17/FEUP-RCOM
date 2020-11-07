@@ -25,6 +25,7 @@ void configStateMachine(mode stateMachineMode) {
 
 void resetState() {
     state.currentState = START;
+    state.last_response = R_NULL;
 }
 
 void updateState(unsigned char byte) {
