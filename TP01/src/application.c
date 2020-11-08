@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     double elapsed = (endTime.tv_sec - beginTime.tv_sec) * 1e6;
     elapsed = (elapsed + (endTime.tv_usec - beginTime.tv_usec)) * 1e-6;
 
-    printf("Elapsed: %.2lf seconds\n", elapsed);
+    printf("Elapsed: %.5lf seconds\n", elapsed);
 
     return 0;
 }
