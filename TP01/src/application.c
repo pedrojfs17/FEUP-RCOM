@@ -14,16 +14,16 @@ int main(int argc, char** argv)
 
     printf("App initialized!\nPath: %s\n", app.path);
 
-    // Start Clock
-    struct timeval beginTime, endTime;
-    gettimeofday(&beginTime, NULL);
-
     int fd;
 
     if ((fd = llopen(app.port, app.role)) < 0) {
         fprintf(stderr, "llopen failed\n");
         return -1;
     }
+
+    // Start Clock
+    struct timeval beginTime, endTime;
+    gettimeofday(&beginTime, NULL);
 
     if (app.role == TRANSMITTER) {
         if (transmitterApplication(fd, app.path) < 0) {
@@ -37,11 +37,6 @@ int main(int argc, char** argv)
             return -1;
         }
     }
-    
-    if (llclose(fd) < 0){
-        fprintf(stderr, "llclose failed\n");
-        return -1;
-    }
 
     // Get Elapsed Time
     gettimeofday(&endTime, NULL);
@@ -50,6 +45,11 @@ int main(int argc, char** argv)
     elapsed = (elapsed + (endTime.tv_usec - beginTime.tv_usec)) * 1e-6;
 
     printf("Elapsed: %.5lf seconds\n", elapsed);
+    
+    if (llclose(fd) < 0){
+        fprintf(stderr, "llclose failed\n");
+        return -1;
+    }
 
     return 0;
 }
