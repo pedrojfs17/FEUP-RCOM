@@ -47,7 +47,7 @@ int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet) {
         msg[i + 4] = data[i];
         if (i > 0) bcc2 ^= data[i];
     }
-    //if (wrongBcc % 5000 == 0)
+    //if (wrongBcc % 10 == 0 || wrongBcc % 11 == 0 || wrongBcc % 12 == 0)
         //bcc2 ^= 0xFF;
     msg[dataSize + 4] = bcc2;
 

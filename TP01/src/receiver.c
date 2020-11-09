@@ -8,10 +8,13 @@ int receiverApplication(int fd, char* path) {
     while (1) {
         unsigned char buf[MAX_PACKET_SIZE];
         if ((res = llread(fd, buf)) < 0) {
-            if (numTries >= 3) return -1;
+            if (numTries > 9) return -1;
             numTries++;
             continue;
         }
+
+        if (numTries > 0)
+            fprintf(stderr, "It took %d tries to read!\n", numTries);
 
         numTries = 0;
         nump++;
