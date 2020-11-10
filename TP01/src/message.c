@@ -6,7 +6,7 @@ void alarm_handler() {
     alarm_flag = TRUE;
 }
 
-int sendSupervivionMessage(int fd, unsigned char address, unsigned char control, mode responseType) {
+int sendSupervisionMessage(int fd, unsigned char address, unsigned char control, mode responseType) {
     unsigned char msg[5] = {
         MSG_FLAG, 
         address, 

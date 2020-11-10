@@ -19,7 +19,7 @@
 
 void alarm_handler();
 
-int sendSupervivionMessage(int fd, unsigned char address, unsigned char control, mode responseType);
+int sendSupervisionMessage(int fd, unsigned char address, unsigned char control, mode responseType);
 
 int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet);
 

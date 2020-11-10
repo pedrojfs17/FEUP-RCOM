@@ -68,11 +68,11 @@ int llopen(int port, int role) {
 int recv_init(int fd) {
     unsigned char message[5];
     if (readMessage(fd, message, COMMAND_SET) < 0) return -1;
-    return sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
+    return sendSupervisionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
 }
 
 int trans_init(int fd) {
-    return sendSupervivionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_SET, RESPONSE_UA);
+    return sendSupervisionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_SET, RESPONSE_UA);
 }
 
 int llwrite(int fd, unsigned char * buffer, int lenght) {
@@ -108,16 +108,17 @@ int llread(int fd, unsigned char * buffer) {
 
     if (receivedBCC2 == receivedDataBCC2 && unstuffedMessage[2] == MSG_CTRL_S(packet)) {
         packet = (packet + 1) % 2;
-        if (sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE) < 0) return -1;
+        if (sendSupervisionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE) < 0) return -1;
         memcpy(buffer, &unstuffedMessage[4], res-5);
         return res - 5;
     }
     else if (receivedBCC2 == receivedDataBCC2) {
+        sendSupervisionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE);
         fprintf(stderr, "Duplicate Packet!\n");
         tcflush(fd, TCIFLUSH);
         return -1;
     } else {
-        sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_REJ(packet), NO_RESPONSE);
+        sendSupervisionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_REJ(packet), NO_RESPONSE);
         fprintf(stderr, "Error in BCC2, sent REJ!\n");
         tcflush(fd, TCIFLUSH);
         return -1;
@@ -156,11 +157,11 @@ int recv_disc(int fd) {
     printf("DISCONNECTING RECEIVER...\n");
     unsigned char message[5];
     if (readMessage(fd, message, COMMAND_DISC) < 0) return -1;
-    return sendSupervivionMessage(fd, MSG_A_RECV_COMMAND, MSG_CTRL_DISC, RESPONSE_UA);
+    return sendSupervisionMessage(fd, MSG_A_RECV_COMMAND, MSG_CTRL_DISC, RESPONSE_UA);
 }
 
 int trans_disc(int fd) {
     printf("DISCONNECTING TRANSMITTER...\n");
-    if (sendSupervivionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_DISC, COMMAND_DISC) < 0) return -1;
-    return sendSupervivionMessage(fd, MSG_A_TRANS_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
+    if (sendSupervisionMessage(fd, MSG_A_TRANS_COMMAND, MSG_CTRL_DISC, COMMAND_DISC) < 0) return -1;
+    return sendSupervisionMessage(fd, MSG_A_TRANS_RESPONSE, MSG_CTRL_UA, NO_RESPONSE);
 }
