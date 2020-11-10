@@ -114,10 +114,12 @@ int llread(int fd, unsigned char * buffer) {
     }
     else if (receivedBCC2 == receivedDataBCC2) {
         fprintf(stderr, "Duplicate Packet!\n");
+        tcflush(fd, TCIFLUSH);
         return -1;
     } else {
         sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_REJ(packet), NO_RESPONSE);
         fprintf(stderr, "Error in BCC2, sent REJ!\n");
+        tcflush(fd, TCIFLUSH);
         return -1;
     }
 }
