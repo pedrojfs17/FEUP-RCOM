@@ -106,13 +106,16 @@ int llread(int fd, unsigned char * buffer) {
     unsigned char receivedBCC2 = unstuffedMessage[res - 1];
     unsigned char receivedDataBCC2 = BCC2(unstuffedMessage, res - 1, 4);
 
-    if (receivedBCC2 == receivedDataBCC2) {
+    if (receivedBCC2 == receivedDataBCC2 && unstuffedMessage[2] == MSG_CTRL_S(packet)) {
         packet = (packet + 1) % 2;
         if (sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_RR(packet), NO_RESPONSE) < 0) return -1;
         memcpy(buffer, &unstuffedMessage[4], res-5);
         return res - 5;
     }
-    else {
+    else if (receivedBCC2 == receivedDataBCC2) {
+        fprintf(stderr, "Duplicate Packet!\n");
+        return -1;
+    } else {
         sendSupervivionMessage(fd, MSG_A_RECV_RESPONSE, MSG_CTRL_REJ(packet), NO_RESPONSE);
         fprintf(stderr, "Error in BCC2, sent REJ!\n");
         return -1;
