@@ -32,9 +32,10 @@ int receiverApplication(int fd, char* path) {
 
 int parsePacket(unsigned char * buffer, int lenght, char* path) {
     static int destinationFile;
+    static int filesize = 0;
 
     if (buffer[0] == START_PACKET) {
-        parseControlPacket(buffer, lenght, path);
+        parseControlPacket(buffer, lenght, path, &filesize);
         
         if ((destinationFile = open(path, O_WRONLY | O_CREAT, 0777)) < 0) {
             perror("Error opening destination file!");
@@ -47,6 +48,12 @@ int parsePacket(unsigned char * buffer, int lenght, char* path) {
             perror("Error closing destination file!");
             return -1;
         }
+
+        if (checkFileSize(path, filesize) != 0) {
+            fprintf(stderr, "Recieved file size different from expected\n");
+            return -1; 
+        }
+
         return END_PACKET;
     } else if (buffer[0] == DATA_PACKET) {
         unsigned dataSize = buffer[3] + 256 * buffer[2];
@@ -65,17 +72,14 @@ int parsePacket(unsigned char * buffer, int lenght, char* path) {
     }
 }
 
-void parseControlPacket(unsigned char * buffer, int lenght, char* path) {
-    // unsigned fileSize = 0;
-
+void parseControlPacket(unsigned char * buffer, int lenght, char* path, int* filesize) {
     for (int i = 1; i < lenght; i++) {
         if (buffer[i] == FILE_SIZE) {
             i++; // i is now in the byte with information about the number of bytes
-            // for (int j = 0; j < buffer[i]; j++) {
-            //     fileSize |= (buffer[i+j+1] << (8*j));
-            // }
+            for (int j = 0; j < buffer[i]; j++) {
+                *filesize |= (buffer[i+j+1] << (8*j));
+            }
             i += buffer[i];
-            // app->fileSize = fileSize;
         }
 
         if (buffer[i] == FILE_NAME) {
@@ -89,4 +93,16 @@ void parseControlPacket(unsigned char * buffer, int lenght, char* path) {
             i += buffer[i];
         }
     }
+}
+
+int checkFileSize(char* path, int filesize) {
+    struct stat file_stat;
+
+    // Reads file info using stat
+    if (stat(path, &file_stat)<0){
+        perror("Error getting file information.");
+        return -1;
+    }
+
+    return (filesize != file_stat.st_size);
 }
