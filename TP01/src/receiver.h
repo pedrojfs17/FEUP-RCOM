@@ -17,3 +17,5 @@ int parsePacket(unsigned char * buffer, int lenght, char* path);
 void parseControlPacket(unsigned char * buffer, int lenght, char* path, int* filesize);
 
 int checkFileSize(char* path, int filesize);
+
+int checkSequenceNumber(unsigned r_sn);

@@ -56,6 +56,10 @@ int parsePacket(unsigned char * buffer, int lenght, char* path) {
 
         return END_PACKET;
     } else if (buffer[0] == DATA_PACKET) {
+        if (checkSequenceNumber(buffer[1]) != 0) {
+            fprintf(stderr, "Error, invalid sequence number\n");
+            return -1;
+        }
         unsigned dataSize = buffer[3] + 256 * buffer[2];
         if (write(destinationFile, &buffer[4], dataSize) < 0) {
             perror("Error writing to destination file!");
@@ -105,4 +109,15 @@ int checkFileSize(char* path, int filesize) {
     }
 
     return (filesize != file_stat.st_size);
+}
+
+int checkSequenceNumber(unsigned r_sn) {
+    static unsigned sequence_num = 0;
+
+    if (r_sn == sequence_num) {
+        sequence_num = (sequence_num + 1) % 255;
+        return 0;
+    }
+
+    return -1;
 }
