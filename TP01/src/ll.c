@@ -3,12 +3,11 @@
 #include "ll.h"
 
 struct termios oldtio;
-struct linkLayer ll;
 
 int llopen(int port, int role) {
-    sprintf(ll.port, "/dev/ttyS%d", port);
-
-    int fd = open(ll.port, O_RDWR | O_NOCTTY);
+    char portString[15];
+    sprintf(portString, "/dev/ttyS%d", port);
+    int fd = open(portString, O_RDWR | O_NOCTTY);
     if (fd < 0) {
         perror("Error opening serial port");
         return -1;

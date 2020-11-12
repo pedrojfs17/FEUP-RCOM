@@ -15,7 +15,7 @@ int sendSupervisionMessage(int fd, unsigned char address, unsigned char control,
         MSG_FLAG
     };
 
-    if (responseType != -1) {
+    if (responseType != NO_RESPONSE) {
         if (sendMessageWithResponse(fd, msg, MSG_SET_SIZE, responseType) < 0)
             return -1;
 

@@ -18,13 +18,6 @@
 
 #define BAUDRATE B38400
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
-#define FALSE 0
-#define TRUE 1
-
-struct linkLayer {
-    char port[20]; /*Dispositivo /dev/ttySx, x = 0, 1*/
-    int role;
-};
 
 int llopen(int port, int role);
 int recv_init(int fd);
