@@ -16,8 +16,6 @@
 #define FALSE 0
 #define TRUE 1
 
-#define NO_RESPONSE -1
-
 void alarm_handler();
 
 int sendSupervisionMessage(int fd, unsigned char address, unsigned char control, mode responseType);
