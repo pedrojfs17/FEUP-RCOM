@@ -165,8 +165,5 @@ void WaitingData_stateHandler(unsigned char byte) {
         state.currentState = STOP;
         return;
     }
-    else {
-        // CHECK IF MAX MESSAGE LENGHT
-        return;
-    }
+    else return;
 }

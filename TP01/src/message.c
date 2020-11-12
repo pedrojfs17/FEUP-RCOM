@@ -129,7 +129,6 @@ int sendMessageWithResponse(int fd, unsigned char * msg, int messageSize, mode r
         while (getState() != STOP && !alarm_flag) {
             res = read(fd, buf, 1);
             if (res == 0) continue;
-            // printf("Byte: %#4.2x\n", buf[0]);
             updateState(buf[0]);
         }
 

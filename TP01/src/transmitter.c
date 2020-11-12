@@ -61,7 +61,7 @@ int transmitterApplication(int fd, char* path) {
         return -1;
     }
 
-    return 0;
+    return close(file_fd);
 }
 
 
