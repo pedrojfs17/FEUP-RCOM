@@ -79,3 +79,12 @@ char * getFilename(char * path) {
     }
     return filename;
 }
+
+int messageWithError(int percentage) {
+    int error = rand() % 100;
+    
+    if (error < percentage)
+        return 1;
+    
+    return 0;
+}

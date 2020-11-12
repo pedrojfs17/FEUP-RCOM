@@ -29,11 +29,7 @@ int sendSupervisionMessage(int fd, unsigned char address, unsigned char control,
     }
 }
 
-//int wrongBcc = 0;
-
 int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet) {
-    //wrongBcc++;
-
     int msgSize = dataSize + 5;
 
     unsigned char msg[msgSize];
@@ -47,8 +43,6 @@ int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet) {
         msg[i + 4] = data[i];
         if (i > 0) bcc2 ^= data[i];
     }
-    //if (wrongBcc % 10 == 0 || wrongBcc % 11 == 0 || wrongBcc % 12 == 0)
-        //bcc2 ^= 0xFF;
     msg[dataSize + 4] = bcc2;
 
     unsigned char stuffedData[msgSize * 2];
@@ -69,17 +63,20 @@ int sendDataMessage(int fd, unsigned char * data, int dataSize, int packet) {
         if (ret > 0 && ((packet == 0 && response == R_RR1) || (packet == 1 && response == R_RR0))) {
             receivedACK = TRUE;
         } else if (ret > 0) {
-            fprintf(stderr, "\nReceived response is invalid. Trying again...");
+            fprintf(stderr, "Received response is invalid. Trying again...\n");
         }
     } while (numTries < 3 && !receivedACK);
 
     if (!receivedACK) {
-        fprintf(stderr, "\nFailed to get ACK\n");
+        fprintf(stderr, "Failed to get ACK\n");
         return -1;
     }
     else
         return ret;
 }
+
+int wrongBcc2 = 0;
+int wrongBcc1 = 0;
 
 int sendMessageWithResponse(int fd, unsigned char * msg, int messageSize, mode responseType) {
     configStateMachine(responseType);
@@ -91,8 +88,30 @@ int sendMessageWithResponse(int fd, unsigned char * msg, int messageSize, mode r
         numTries++;
         alarm_flag = FALSE;
 
-        if ((ret = write(fd, msg, messageSize)) == -1) {
-            fprintf(stderr, "Write failed\n");
+        if (messageWithError(BCC1_ERROR_PERCENTAGE)) {
+            wrongBcc1++;
+            fprintf(stderr, "Number of BCC1 errors: %d\n", wrongBcc1);
+            unsigned char msgWithError[MAX_BUFFER_SIZE];
+            memcpy(msgWithError, msg, messageSize);
+            msgWithError[2] ^= 0xFF;
+            if ((ret = write(fd, msgWithError, messageSize)) == -1) {
+                fprintf(stderr, "Write failed\n");
+            }
+        }
+        else if (messageWithError(BCC2_ERROR_PERCENTAGE)) {
+            wrongBcc2++;
+            fprintf(stderr, "Number of BCC2 errors: %d\n", wrongBcc2);
+            unsigned char msgWithError[MAX_BUFFER_SIZE];
+            memcpy(msgWithError, msg, messageSize);
+            msgWithError[messageSize - 2] ^= 0xFF;
+            if ((ret = write(fd, msgWithError, messageSize)) == -1) {
+                fprintf(stderr, "Write failed\n");
+            }
+        }
+        else {
+            if ((ret = write(fd, msg, messageSize)) == -1) {
+                fprintf(stderr, "Write failed\n");
+            }
         }
 
         alarm(3);

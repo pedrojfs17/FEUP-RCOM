@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "message_defs.h"
 
@@ -21,3 +22,5 @@ void clearProgressBar();
 void printProgressBar(int progress, int total);
 
 char * getFilename(char * path);
+
+int messageWithError(int percentage);

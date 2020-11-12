@@ -3,6 +3,9 @@
 #define MAX_PACKET_SIZE 256 // minimum 16
 #define MAX_BUFFER_SIZE (MAX_PACKET_SIZE * 2 + 7)
 
+#define BCC1_ERROR_PERCENTAGE 0
+#define BCC2_ERROR_PERCENTAGE 0
+
 #define MSG_FLAG 0x7e
 #define ESCAPE 0x7d
 
