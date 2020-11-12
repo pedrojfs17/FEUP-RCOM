@@ -5,6 +5,7 @@
 
 #define BCC1_ERROR_PERCENTAGE 0
 #define BCC2_ERROR_PERCENTAGE 0
+#define T_PROP 0
 
 #define MSG_FLAG 0x7e
 #define ESCAPE 0x7d

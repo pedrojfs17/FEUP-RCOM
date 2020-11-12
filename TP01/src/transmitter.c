@@ -40,7 +40,7 @@ int transmitterApplication(int fd, char* path) {
         memcpy(&dataPacket[4], buf, bytes_to_send);
 
         progress += bytes_to_send;
-        //printProgressBar(progress, file_stat.st_size);
+        printProgressBar(progress, file_stat.st_size);
         if (llwrite(fd, dataPacket, ((bytes_to_send + 4) < MAX_PACKET_SIZE)? (bytes_to_send + 4) : MAX_PACKET_SIZE) < 0) { // Only sends max packet if the last packet is of that size
             fprintf(stderr, "llwrite failed\n");
             return -1;
@@ -49,7 +49,7 @@ int transmitterApplication(int fd, char* path) {
         // printf("Sent %d data bytes\n", bytes_to_send+4);
 
         sequenceNumber++;
-        //clearProgressBar();
+        clearProgressBar();
     }
 
     printProgressBar(1, 1);

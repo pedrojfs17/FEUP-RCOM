@@ -142,6 +142,8 @@ int sendMessageWithResponse(int fd, unsigned char * msg, int messageSize, mode r
         return -1;
     }
 
+    usleep(T_PROP);
+
     return ret;
 }
 
@@ -180,6 +182,8 @@ int readMessage(int fd, unsigned char * message, mode responseType) {
         fprintf(stderr, "Failed to read message\n");
         return -1;
     }
+
+    usleep(T_PROP);
 
     return numBytesRead;
 }
