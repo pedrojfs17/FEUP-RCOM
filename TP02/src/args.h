@@ -12,6 +12,8 @@ typedef struct {
     char * password;
     char * host;
     char * path;
+    char * host_name;
+    char * ip;
 } urlArgs;
 
 int parseUrl(char * url, urlArgs * parsedUrl);
