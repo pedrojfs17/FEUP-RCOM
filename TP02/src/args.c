@@ -18,17 +18,18 @@ int parseUrl(char * url, urlArgs * parsedUrl) {
         char * password = strtok(NULL, ":");
 
         if (password == NULL)
-            parsedUrl->password = strdup("");
+            parsedUrl->password = strdup("pass");
         else
             parsedUrl->password = password;
     }
     else {
-        parsedUrl->user = strdup("");
-        parsedUrl->password = strdup("");
+        parsedUrl->user = strdup("anonymous");
+        parsedUrl->password = strdup("pass");
         parsedUrl->host = args;
     }
 
     parsedUrl->path = path;
+    parsedUrl->fileName = getFilename(path);
 
     if (parsedUrl->host == NULL || !strcmp(parsedUrl->host, "") || !strcmp(parsedUrl->path, "")) {
         fprintf(stderr, "Invalid URL!\n");
@@ -39,6 +40,7 @@ int parseUrl(char * url, urlArgs * parsedUrl) {
     printf("Password: %s\n", parsedUrl->password);
     printf("Host: %s\n", parsedUrl->host);
     printf("Path: %s\n", parsedUrl->path);
+    printf("File name: %s\n", parsedUrl->fileName);
 
     struct hostent * h;
 
@@ -54,6 +56,16 @@ int parseUrl(char * url, urlArgs * parsedUrl) {
     printf("IP Address : %s\n", parsedUrl->ip);
 
     return 0;
+}
+
+char * getFilename(char * path) {
+    char * filename = path, *p;
+    for (p = path; *p; p++) {
+        if (*p == '/' || *p == '\\' || *p == ':') {
+            filename = p + 1;
+        }
+    }
+    return filename;
 }
 
 int hasUser(char * args) {
