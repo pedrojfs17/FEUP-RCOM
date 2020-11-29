@@ -21,42 +21,53 @@ int initConnection(char * ip, int port) {
 		fprintf(stderr, "Error connecting to server!\n");
         return -1;
 	}
-
-	char response[1024];
-	bzero(response, 1024);
-	if (readResponse(sockfd, response) < 0) {
-        return -1;
-	}	
     
     return sockfd;
 }
 
 int login(int socketFd, char * username, char * password) {
-	char response[1024];
-
-	if (sendCommand(socketFd, USER, TRUE, username, response) < 0) {
+	// Command USER
+	if (sendCommand(socketFd, USER, TRUE, username) < 0) {
         fprintf(stderr, "Error sending USER command!\n");
         return -1;
     }
 
-    if (sendCommand(socketFd, PASS, TRUE, password, response) < 0) {
+	if (checkResponse(socketFd, CMD_USERNAME_OK) < 0)
+		return -1;
+
+
+	// Command PASS
+    if (sendCommand(socketFd, PASS, TRUE, password) < 0) {
         fprintf(stderr, "Error sending PASS command!\n");
         return -1;
     }
+
+	if (checkResponse(socketFd, CMD_LOGIN_SUCCESS) < 0)
+		return -1;
 
 	return 0;
 }
 
 int passiveMode(int socketFd, pasvResponse * response) {
-	char socketResponse[1024];
+	socketResponse socketresponse;
+	memset(&socketresponse, 0, sizeof(socketResponse));
 	
-	if (sendCommand(socketFd, PASV, FALSE, NULL, socketResponse) < 0) {
+	if (sendCommand(socketFd, PASV, FALSE, NULL) < 0) {
         fprintf(stderr, "Error sending PASV command!\n");
         return -1;
     }
 
+	if (readResponse(socketFd, &socketresponse) < 0) {
+        return -1;
+	}
+
+	if (socketresponse.code != CMD_PASV_MODE) {
+		fprintf(stderr, "Response code failed!\n");
+        return -1;
+	}
+
 	// Parse Response
-	strtok(socketResponse, "(");
+	strtok(socketresponse.response, "(");
     char * args = strtok(NULL, ")");
 
 	int ip[4], port[2];
@@ -68,8 +79,7 @@ int passiveMode(int socketFd, pasvResponse * response) {
 	return 0;
 }
 
-int sendCommand(int socketFd, char * command, int hasArgs, char * args, char * response) {
-	bzero(response, 1024);
+int sendCommand(int socketFd, char * command, int hasArgs, char * args) {
 	char cmd[256];
 
 	// Build Command
@@ -79,16 +89,6 @@ int sendCommand(int socketFd, char * command, int hasArgs, char * args, char * r
 	if (writeMessage(socketFd, cmd) < 0) {
         return -1;
 	}
-
-	if (!strcmp(command, RETR)) return 0;
-
-	// Wait for Response
-	if (readResponse(socketFd, response) < 0) {
-        return -1;
-	}
-
-	// TODO 
-	// Parse Response to check if code is error code or not
 
 	return 0;
 }
@@ -106,7 +106,7 @@ int writeMessage(int socketFd, char * message) {
     return bytesSent;
 }
 
-int readResponse(int socketFd, char * response) {
+int readResponse(int socketFd, socketResponse * response) {
 	FILE * socket = fdopen(socketFd, "r");
 
 	char * buf;
@@ -115,16 +115,18 @@ int readResponse(int socketFd, char * response) {
 
 	// Reads response line by line. Stops when the line is "<code> "
 	while (getline(&buf, &bytesRead, socket) > 0) {
-		strncat(response, buf, bytesRead - 1);
+		strncat(response->response, buf, bytesRead - 1);
 		totalBytesRead += bytesRead;
 
-		if (buf[3] == ' ')
+		if (buf[3] == ' ') {
+			sscanf(buf, "%d", &response->code);
 			break;
+		}
     }
 
 	free(buf);
 
-	printf("< %s", response);
+	printf("< %s", response->response);
 
     return totalBytesRead;
 }
@@ -141,4 +143,20 @@ void buildCommand(char * command, int hasArgs, char * args, char * cmd) {
 
 	// Command Terminator
 	strcat(cmd, CRLF);
+}
+
+int checkResponse(int socketFd, int responseCode) {
+	static socketResponse response;
+	memset(&response, 0, sizeof(socketResponse));
+
+	if (readResponse(socketFd, &response) < 0) {
+        return -1;
+	}	
+
+	if (response.code != responseCode) {
+		fprintf(stderr, "Response code failed!\n");
+        return -1;
+	}
+
+	return 0;
 }

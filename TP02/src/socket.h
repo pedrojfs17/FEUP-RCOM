@@ -18,6 +18,11 @@ typedef struct {
     int port;
 } pasvResponse;
 
+typedef struct {
+    char response[1024];
+    int code;
+} socketResponse;
+
 /**
  * Starts the connection with a socket
  */
@@ -36,7 +41,7 @@ int passiveMode(int socketFd, pasvResponse * response);
 /**
  * Send a command to the socket
  */
-int sendCommand(int socketFd, char * command, int hasArgs, char * args, char * response);
+int sendCommand(int socketFd, char * command, int hasArgs, char * args);
 
 /**
  * Writes a message to the socket
@@ -46,9 +51,14 @@ int writeMessage(int socketFd, char * message);
 /**
  * Read response from socket
  */
-int readResponse(int socketFd, char * response);
+int readResponse(int socketFd, socketResponse * response);
 
 /**
  * Builds a command
  */
 void buildCommand(char * command, int hasArgs, char * args, char * cmd);
+
+/**
+ * Reads a response and checks if the code is correct
+ */
+int checkResponse(int socketFd, int responseCode);
