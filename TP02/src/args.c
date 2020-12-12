@@ -12,35 +12,34 @@ int parseUrl(char * url, urlArgs * parsedUrl) {
 
     if (hasUser(args)) {
         char * login = strtok(args, "@");
-        parsedUrl->host = strtok(NULL, "@");
 
-        parsedUrl->user = strtok(login, ":");
+        char * user = strtok(login, ":");
         char * password = strtok(NULL, ":");
 
+        strcpy(parsedUrl->user, user);
+
         if (password == NULL)
-            parsedUrl->password = strdup("pass");
+            strcpy(parsedUrl->password, "pass");
         else
-            parsedUrl->password = password;
+            strcpy(parsedUrl->password, password);
+
+        char * host = strtok(NULL, "@");
+        strcpy(parsedUrl->host, host);
     }
     else {
-        parsedUrl->user = strdup("anonymous");
-        parsedUrl->password = strdup("pass");
-        parsedUrl->host = args;
+        strcpy(parsedUrl->user, "anonymous");
+        strcpy(parsedUrl->password, "pass");
+        strcpy(parsedUrl->host, args);
     }
 
-    parsedUrl->path = path;
-    parsedUrl->fileName = getFilename(path);
+    char * fileName = getFilename(path);
+    strcpy(parsedUrl->path, path);
+    strcpy(parsedUrl->fileName, fileName);
 
-    if (parsedUrl->host == NULL || !strcmp(parsedUrl->host, "") || !strcmp(parsedUrl->path, "")) {
+    if (!strcmp(parsedUrl->host, "") || !strcmp(parsedUrl->path, "")) {
         fprintf(stderr, "Invalid URL!\n");
         return -1;
     }
-
-    printf("User: %s\n", parsedUrl->user);
-    printf("Password: %s\n", parsedUrl->password);
-    printf("Host: %s\n", parsedUrl->host);
-    printf("Path: %s\n", parsedUrl->path);
-    printf("File name: %s\n", parsedUrl->fileName);
 
     struct hostent * h;
 
@@ -49,11 +48,19 @@ int parseUrl(char * url, urlArgs * parsedUrl) {
         return -1;
     }
 
-    parsedUrl->host_name = h->h_name;
-    parsedUrl->ip = inet_ntoa(*((struct in_addr *)h->h_addr));
+    char * host_name = h->h_name;
+    strcpy(parsedUrl->host_name, host_name);
 
+    char * ip = inet_ntoa(*((struct in_addr *)h->h_addr));
+    strcpy(parsedUrl->ip, ip);
+
+    printf("\nUser: %s\n", parsedUrl->user);
+    printf("Password: %s\n", parsedUrl->password);
+    printf("Host: %s\n", parsedUrl->host);
+    printf("Path: %s\n", parsedUrl->path);
+    printf("File name: %s\n", parsedUrl->fileName);
     printf("Host name  : %s\n", parsedUrl->host_name);
-    printf("IP Address : %s\n", parsedUrl->ip);
+    printf("IP Address : %s\n\n", parsedUrl->ip);
 
     return 0;
 }

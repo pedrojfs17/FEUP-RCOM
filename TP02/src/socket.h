@@ -14,7 +14,7 @@
 #define FALSE 0
 
 typedef struct {
-    char * ip;
+    char ip[20];
     int port;
 } pasvResponse;
 

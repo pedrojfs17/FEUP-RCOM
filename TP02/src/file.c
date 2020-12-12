@@ -8,30 +8,9 @@ int downloadFile(urlArgs * args) {
         fprintf(stderr, "Error initializing connection!\n");
         return -1;
     }
-
-    /* 
-        Se eu chamar esta funcao checkResponse (que faz o mesmo que o
-        codigo que esta em baixo destes comentarios) ele altera o 
-        valor do args->path dentro da funcao passiveMode mesmo nao sendo 
-        enviado o pointer args para la. Nao percebo porque e que isso 
-        acontece, talvez seja algum problema de pointers, nao sei, por 
-        enquanto fica assim que funciona.
-    */
-    /*
+    
     if (checkResponse(socketFd, CMD_SOCKET_READY) < 0)
         return -1;
-    */
-
-    socketResponse response;
-	memset(&response, 0, sizeof(socketResponse));
-	if (readResponse(socketFd, &response) < 0) {
-        return -1;
-	}	
-
-	if (response.code != CMD_SOCKET_READY) {
-		fprintf(stderr, "Response code failed!\n");
-        return -1;
-	}
 
     // Login
     if (login(socketFd, args->user, args->password) < 0) {

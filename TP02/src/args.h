@@ -8,13 +8,13 @@
 #include <arpa/inet.h>
 
 typedef struct {
-    char * user;
-    char * password;
-    char * host;
-    char * path;
-    char * fileName;
-    char * host_name;
-    char * ip;
+    char host[512];
+    char user[256];
+    char password[256];
+    char path[512];
+    char fileName[512];
+    char host_name[512];
+    char ip[20];
 } urlArgs;
 
 /**
