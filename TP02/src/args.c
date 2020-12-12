@@ -12,6 +12,7 @@ int parseUrl(char * url, urlArgs * parsedUrl) {
 
     if (hasUser(args)) {
         char * login = strtok(args, "@");
+        char * host = strtok(NULL, "@");
 
         char * user = strtok(login, ":");
         char * password = strtok(NULL, ":");
@@ -23,7 +24,6 @@ int parseUrl(char * url, urlArgs * parsedUrl) {
         else
             strcpy(parsedUrl->password, password);
 
-        char * host = strtok(NULL, "@");
         strcpy(parsedUrl->host, host);
     }
     else {
