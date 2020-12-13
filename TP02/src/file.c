@@ -36,12 +36,18 @@ int downloadFile(urlArgs * args) {
         fprintf(stderr, "Error sending PASV command!\n");
         return -1;
     }
+
+    if (checkResponse(socketFd, CMD_RETR_READY) < 0)
+        return -1;
     
     // Transfer file
     if (transferFile(dataFd, args->fileName) < 0) {
         fprintf(stderr, "Error transfering file!\n");
         return -1;
     }
+
+    if (checkResponse(socketFd, CMD_TRANSFER_COMPLETE) < 0)
+        return -1;
 
     // Close
     if (close(socketFd) < 0) {
