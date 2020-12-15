@@ -32,6 +32,13 @@ int login(int socketFd, char * username, char * password) {
         return -1;
     }
 
+	if (!strcmp(username, "anonymous")) {
+		if (checkResponse(socketFd, CMD_LOGIN_SUCCESS) < 0)
+			return -1;
+
+		return 0;
+	}
+
 	if (checkResponse(socketFd, CMD_USERNAME_OK) < 0)
 		return -1;
 
