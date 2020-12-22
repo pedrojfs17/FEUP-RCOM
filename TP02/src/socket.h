@@ -61,4 +61,9 @@ void buildCommand(char * command, int hasArgs, char * args, char * cmd);
 /**
  * Reads a response and checks if the code is correct
  */
-int checkResponse(int socketFd, int responseCode);
+int checkResponseCode(int socketFd, int responseCode);
+
+/**
+ * Reads a response and checks if the code is in the list of valid codes
+ */
+int checkResponseCodes(int socketFd, int responseCodes[], int nCodes);

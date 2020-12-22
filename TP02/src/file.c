@@ -9,7 +9,7 @@ int downloadFile(urlArgs * args) {
         return -1;
     }
     
-    if (checkResponse(socketFd, CMD_SOCKET_READY) < 0)
+    if (checkResponseCode(socketFd, CMD_SOCKET_READY) < 0)
         return -1;
 
     // Login
@@ -37,7 +37,7 @@ int downloadFile(urlArgs * args) {
         return -1;
     }
 
-    if (checkResponse(socketFd, CMD_RETR_READY) < 0)
+    if (checkResponseCode(socketFd, CMD_RETR_READY) < 0)
         return -1;
     
     // Transfer file
@@ -46,7 +46,7 @@ int downloadFile(urlArgs * args) {
         return -1;
     }
 
-    if (checkResponse(socketFd, CMD_TRANSFER_COMPLETE) < 0)
+    if (checkResponseCode(socketFd, CMD_TRANSFER_COMPLETE) < 0)
         return -1;
 
     // Close

@@ -32,14 +32,9 @@ int login(int socketFd, char * username, char * password) {
         return -1;
     }
 
-	if (!strcmp(username, "anonymous")) {
-		if (checkResponse(socketFd, CMD_LOGIN_SUCCESS) < 0)
-			return -1;
+	int validResponses[2] = {CMD_USERNAME_OK, CMD_LOGIN_SUCCESS};
 
-		return 0;
-	}
-
-	if (checkResponse(socketFd, CMD_USERNAME_OK) < 0)
+	if (checkResponseCodes(socketFd, validResponses, 2) < 0)
 		return -1;
 
 
@@ -49,7 +44,7 @@ int login(int socketFd, char * username, char * password) {
         return -1;
     }
 
-	if (checkResponse(socketFd, CMD_LOGIN_SUCCESS) < 0)
+	if (checkResponseCode(socketFd, CMD_LOGIN_SUCCESS) < 0)
 		return -1;
 
 	return 0;
@@ -152,7 +147,7 @@ void buildCommand(char * command, int hasArgs, char * args, char * cmd) {
 	strcat(cmd, CRLF);
 }
 
-int checkResponse(int socketFd, int responseCode) {
+int checkResponseCode(int socketFd, int responseCode) {
 	static socketResponse response;
 	memset(&response, 0, sizeof(socketResponse));
 
@@ -161,6 +156,29 @@ int checkResponse(int socketFd, int responseCode) {
 	}	
 
 	if (response.code != responseCode) {
+		fprintf(stderr, "Response code failed!\n");
+        return -1;
+	}
+
+	return 0;
+}
+
+int checkResponseCodes(int socketFd, int responseCodes[], int nCodes) {
+	static socketResponse response;
+	memset(&response, 0, sizeof(socketResponse));
+
+	if (readResponse(socketFd, &response) < 0) {
+        return -1;
+	}	
+
+	int valid = 0;
+
+	for (int i = 0; i < nCodes; i++) {
+		if (response.code == responseCodes[i])
+			valid = 1;
+	}
+
+	if (!valid) {
 		fprintf(stderr, "Response code failed!\n");
         return -1;
 	}
